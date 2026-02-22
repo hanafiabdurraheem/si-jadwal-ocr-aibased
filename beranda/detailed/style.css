@@ -1,0 +1,52 @@
+
+.jadwal-container {
+    background-image: url(../img/mesh-gradient-1.png);
+    background-color: #6552fe;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay; 
+
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    max-width: 500px;  
+    margin: 20px auto;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+}
+
+.jadwal-value-only {
+    background-color: transparent;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: left;
+    padding-left: 65px;
+    font-size: 16px;
+    backdrop-filter: blur(4px);
+}
+
+.no-jadwal {
+    background-image: url('../img/mesh-gradient-1.png');
+    background-color: #6552fe;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    text-align: center;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.no-jadwal-text {
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.6);
+}

@@ -1,0 +1,313 @@
+.login {
+  background-color: #1d1d1d;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+}
+
+.login .div {
+  background-color: #1d1d1d;
+  width: 430px;
+  height: 100vh;
+  position: relative;
+}
+
+.login .overlap-group {
+  position: absolute;
+  width: 340px;
+  height: 251px;
+  top: 341px;
+  left: 38px;
+  background-image: url(../img/mesh-gradient-1.png);
+  background-size: cover;
+  background-position: 50% 50%;
+  border-radius: 12px;
+}
+
+.login .kotak-utama {
+  width: 340px;
+  height: 251px;
+  top: 0;
+  left: 0;
+  background: linear-gradient(50deg, #5255fe);
+  backdrop-filter: blur(10px) brightness(100%);
+  -webkit-backdrop-filter: blur(10px) brightness(100%);
+  opacity: 0.64;
+  position: absolute;
+  border-radius: 12px;
+}
+
+.login .kotak-usernam {
+  width: 312px;
+  height: 47px;
+  top: 44px;
+  left: 14px;
+  background-color: #e5e5e5;
+  position: absolute;
+  border-radius: 12px;
+}
+
+.login .kotak-pass {
+  width: 312px;
+  height: 47px;
+  top: 135px;
+  left: 14px;
+  background-color: #e5e5e5;
+  position: absolute;
+  border-radius: 12px;
+}
+
+.login .button-login {
+  position: absolute;
+  width: 93px;
+  height: 25px;
+  top: 209px;
+  left: 233px;
+  background-color: #e5e5e5;
+  border-radius: 12px;
+}
+
+.login .text-wrapper {
+  position: absolute;
+  width: 100%;
+  top: 13px;
+  left: 31px;
+  font-family: "Poppins-Bold", Helvetica;
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.login .user {
+  position: absolute;
+  width: 290px;
+  height: 31px;
+  top: 51px;
+  left: 36px;
+  font-family: "Poppins-Regular", Helvetica;
+  font-weight: 400;
+  color: #000000;
+  font-size: 12px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.login .password {
+  width: 290px;
+  height: 31px;
+  top: 142px;
+  font-family: "Poppins-Regular", Helvetica;
+  font-weight: 400;
+  color: #000000;
+  font-size: 12px;
+  position: absolute;
+  left: 31px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.login .text-wrapper-29 {
+  width: 100%;
+  top: 103px;
+  font-family: "Poppins-Bold", Helvetica;
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 16px;
+  position: absolute;
+  left: 31px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.login .text-wrapper-3 {
+  position: absolute;
+  width: 93px;
+  height: 25px;
+  top: 208px;
+  left: 233px;
+  font-family: "Poppins-Bold", Helvetica;
+  font-weight: 700;
+  color: #1700d380;
+  font-size: 12px;
+  text-align: center;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.login .text-wrapper-4 {
+  position: absolute;
+  width: 302px;
+  height: 41px;
+  top: 134px;
+  left: 38px;
+  font-family: "Poppins-Bold", Helvetica;
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 32px;
+  letter-spacing: 0;
+  line-height: normal;
+
+
+}
+
+.login .text-wrapper-5 {
+  position: absolute;
+  width: 215px;
+  top: 175px;
+  left: 38px;
+  font-family: "Poppins-Regular", Helvetica;
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 20px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.login .sign-up {
+  position: absolute;
+  width: 215px;
+  top: 620px;
+  left: 38px;
+  font-family: "Poppins-Regular", Helvetica;
+  font-weight: 400;
+  color: #5255fe;
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: normal;
+  text-decoration: underline;
+}
+
+.login .text-wrapper-6 {
+  position: absolute;
+  width: 215px;
+  top: 600px;
+  left: 38px;
+  font-family: "Poppins-Regular", Helvetica;
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.user-input, .password-input {
+      background: transparent;
+      border: none;
+      color: black;
+      font-size: 16px;
+      font-family: inherit;
+      outline: none;
+      padding: 0;
+      margin: 0;
+      position: absolute; /* Disesuaikan dengan layout kamu */
+      top: 180px; /* contoh posisi untuk username */
+      left: 100px;
+    }
+
+.password-input {
+      top: 20px; /* contoh posisi untuk password */
+    }
+
+    /* Sembunyikan spasi kosong jika ingin presisi */
+    ::placeholder {
+      color: gray;
+    }
+
+    /* Contoh styling untuk tombol login */
+    .text-wrapper-3 {
+      background: none;
+      border: none;
+      color: blue;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      position: absolute;
+      top: 320px;
+      left: 100px;
+    }    
+
+
+    input[type="text"], input[type="password"] {
+      background-color: transparent; /* Buat background transparan */
+      border: none;                  /* Hilangkan garis tepi */
+      outline: none;                 /* Hilangkan outline saat diklik */
+      box-shadow: none;             /* Pastikan tidak ada shadow */
+      font-size: 16px;              /* Ukuran teks */
+      color: #000;                  /* Warna teks */
+      width: 100%;                  /* Sesuaikan lebar */
+      padding: 2px 0px;           /* Spasi dalam */
+      font-family: inherit;         /* Gunakan font yang sama */
+    }
+
+    .error-message {
+  background-color: #ffe6e6;
+  color: #cc0000;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #cc0000;
+  max-width: 300px;
+  margin: 10px auto;
+  text-align: center;
+}
+
+.header {
+  position: fixed;
+  top: -65px;
+  left: 55%;
+  transform: translateX(-50%);
+  width: 427px;
+  height: 147px;
+  background-color: transparent;
+  z-index: 9999;
+}
+
+.sijadwal-logo {
+  position: absolute;
+  width: 88px;
+  height: 33px;
+  top: 82px;
+  left: 12px;
+  object-fit: cover;
+  background-image: url(img/sijadwal-logo.png);
+}
+
+.text-wrapper-2 {
+  position: absolute;
+  width: 53px;
+  height: 29px;
+  top: 85px;
+  left: 263px;
+  font-family: "Circular Std-Book", Helvetica;
+  font-weight: 400;
+  color: #e3dddd;
+  font-size: 12px;
+  text-align: center;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.text-wrapper-3 {
+  position: absolute;
+  width: 48px;
+  height: 29px;
+  top: 85px;
+  left: 321px;
+  font-family: "Circular Std-Bold", Helvetica;
+  font-weight: 700;
+  color: #e3dddd;
+  font-size: 12px;
+  text-align: center;
+  letter-spacing: 0;
+  line-height: normal;
+}
+@media (max-width: 768px) {
+  html, body {
+    background-color: #1d1d1d;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow-x: hidden;
+  }}

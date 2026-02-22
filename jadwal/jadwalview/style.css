@@ -1,0 +1,105 @@
+/* ====== GLOBAL ====== */
+
+body {
+    font-family: Helvetica, sans-serif;
+    background: #121212;
+    color: #e0e0e0;
+    padding: 20px;
+    margin: 0;
+}
+
+h1 {
+    text-align: left;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+/* ====== NAV BUTTON ====== */
+
+.nav-buttons {
+    display: flex;
+    justify-content: left;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 0 5px;
+    background: #6552fe;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 6px;
+    border: 1px solid #333;
+    transition: 0.3s;
+}
+
+.btn:hover {
+    background: #9283ff;
+}
+
+/* ====== TABLE CONTAINER ====== */
+
+.jadwal-container {
+    display: flex;
+    justify-content: center;
+}
+
+/* Scroll horizontal */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 10px;
+}
+
+/* ====== TABLE STYLE ====== */
+
+table {
+    border-collapse: collapse;
+    min-width: 900px; /* supaya bisa scroll kalau kolom banyak */
+    width: 100%;
+    background: #1e1e1e;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+thead {
+    background: #2c2c2c;
+}
+
+th {
+    background-color: rgba(79, 70, 229, 0.6); /* opsional, semi-transparan */
+    background-image: url(../../img/gradien.png);
+    background-position: center;
+    color: white;
+    padding: 12px 15px;
+    text-align: left;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    white-space: nowrap;
+}
+
+tbody tr:hover {
+    background: #9283ff;
+}
+
+/* ====== MOBILE OPTIMIZATION ====== */
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+    .btn {
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+}

@@ -1,0 +1,330 @@
+/* Terapkan warna latar gelap ke seluruh halaman */
+            html, body {
+                background-color: #1d1d1d !important;
+                color: white;
+                margin: 0;
+                padding: 0;
+                font-family: Helvetica, sans-serif;
+            }
+
+            /* Jika kamu menggunakan kontainer utama */
+            .container {
+            background-color: #1d1d1d;
+            padding: 20px;
+            min-height: 100vh;
+            }
+
+            /* Tabel tetap konsisten */
+            table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            width: 100%;
+            background-color: #1d1d1d;
+            border-radius: 12px;
+            overflow: hidden;
+            color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            }
+
+            tr {
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            backdrop-filter: blur(10px) brightness(100%);
+            background-blend-mode: multiply;
+            }
+
+
+            /* Header tabel */
+            th {
+            background-color: rgba(79, 70, 229, 0.6); /* opsional, semi-transparan */
+            background-image: url(../../img/gradien.png);
+            background-position: center;
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            }
+
+            /* Isi tabel */
+            td {
+            padding: 12px 15px;
+            border-top: 1px solid #2e2e2e;
+            background-color: #1d1d1d;
+            color: white;
+            }
+
+            /* Hover efek */
+            tr:hover td {
+            background-color: #2e2e2e;
+            }
+
+            /* Tombol kembali */
+            .tambah-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 16px;
+            background-color: #6552fe;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+            }
+
+
+
+            .kembali-button:hover {
+            background-color:rgb(192, 192, 192);
+            }
+
+            .tambah-button:hover {
+            background-color: #9283ff;
+            }
+
+            /* Tombol selesai */
+            .selesai-button {
+            background-color: #e11d48;
+            color: white;
+            padding: 6px 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            }
+
+            .selesai-button:hover {
+            background-color: #be123c;
+            }
+
+            .table-wrapper {
+              width: 100%;
+              overflow-x: auto;
+            }
+
+            table {
+              width: 100%;
+              max-width: 480px;
+              margin: 0 auto; /* supaya center */
+            }
+
+.header-aksi {
+  position: relative;
+  top: 60px;   /* atur sesuai kebutuhan */
+  left: 40px;  /* geser dari sisi kiri */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: left;
+  z-index: 100;
+}
+.daftar-tugas {
+  background-color: #1d1d1d;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+}
+
+.daftar-tugas .div {
+  background-color: #1d1d1d;
+  width: 430px;
+  height: 932px;
+  position: relative;
+}
+
+.daftar-tugas .text-wrapper {
+  position: absolute;
+  width: 282px;
+  top: 156px;
+  left: 26px;
+  font-family: "Poppins-Bold", Helvetica;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: normal;
+  color: #ffffff;
+  letter-spacing: 0;
+}
+
+.daftar-tugas .line {
+  position: absolute;
+  width: 379px;
+  height: 3px;
+  top: 218px;
+  left: 26px;
+  background-image: url(../img/Line.png);
+}
+
+.daftar-tugas .text-wrapper-2 {
+  position: absolute;
+  width: 363px;
+  top: 260px;
+  left: 40px;
+  font-family: "Poppins-Regular", Helvetica;
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: 20px;
+}
+
+.daftar-tugas .text-wrapper-3 {
+  position: absolute;
+  width: 149px;
+  top: 364px;
+  left: 40px;
+  font-family: "Poppins-Regular", Helvetica;
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: 20px;
+}
+
+.daftar-tugas .text-wrapper-4 {
+  position: absolute;
+  width: 212px;
+  top: 468px;
+  left: 40px;
+  font-family: "Poppins-Regular", Helvetica;
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: 20px;
+}
+
+.daftar-tugas .overlap {
+  top: 287px;
+  left: 26px;
+  position: absolute;
+  width: 379px;
+  height: 43px;
+  background-color: #d9d9d9;
+  border-radius: 12px;
+}
+
+.daftar-tugas .text-wrapper-5 {
+  position: absolute;
+  width: 363px;
+  top: 11px;
+  left: 16px;
+  font-family: "Poppins-Regular", Helvetica;
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: 20px;
+}
+
+.daftar-tugas .overlap-group {
+  top: 389px;
+  left: 26px;
+  position: absolute;
+  width: 379px;
+  height: 43px;
+  background-color: #d9d9d9;
+  border-radius: 12px;
+}
+
+.daftar-tugas .text-wrapper-6 {
+  position: absolute;
+  width: 149px;
+  top: 11px;
+  left: 16px;
+  font-family: "Poppins-Regular", Helvetica;
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: 20px;
+}
+
+.daftar-tugas .div-wrapper {
+  top: 491px;
+  left: 24px;
+  position: absolute;
+  width: 379px;
+  height: 43px;
+  background-color: #d9d9d9;
+  border-radius: 12px;
+}
+
+.daftar-tugas .text-wrapper-7 {
+  position: absolute;
+  width: 212px;
+  top: 11px;
+  left: 18px;
+  font-family: "Poppins-Regular", Helvetica;
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: 20px;
+}
+
+.daftar-tugas .tambah {
+  width: 157px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 24px;
+  position: absolute;
+  top: 760px;
+  left: 227px;
+  background-color: #6552fe;
+  border-radius: 16px;
+}
+
+.daftar-tugas .tambah-2 {
+  position: relative;
+  width: fit-content;
+  font-family: "Poppins-Regular", Helvetica;
+  font-weight: 400;
+  font-size: 16px;
+  text-align: center;
+  line-height: 18px;
+  white-space: nowrap;
+  color: #ffffff;
+  letter-spacing: 0;
+}
+
+.daftar-tugas .batal {
+  display: absolute;
+  width: 157px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 24px;
+  position: absolute;
+  top: 759px;
+  left: 50px;
+  border-radius: 16px;
+  border: 1px solid;
+  border-color: #ffffff;
+  text-align: center;
+}
+
+.daftar-tugas .batal-2 {
+  position: relative;
+  width: fit-content;
+  margin-top: -0.50px;
+  font-family: "Poppins-Regular", Helvetica;
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 16px;
+  text-align: center;
+  letter-spacing: 0;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+
+.dropdown {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  box-sizing: border-box;
+  background-color: white;
+}

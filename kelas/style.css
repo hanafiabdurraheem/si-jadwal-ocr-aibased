@@ -1,0 +1,88 @@
+.kelas {
+  background-color: #1d1d1d;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+}
+
+.kelas .div {
+  background-color: #1d1d1d;
+  width: 430px;
+  height: 100vh;
+  position: relative;
+}
+
+.kelas .text-wrapper {
+  position: absolute;
+  width: 90%;
+  top: 134px;
+  left: 24px;
+  font-family: "Poppins-Bold", Helvetica;
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 32px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.kelas .overlap-group {
+  position: absolute;
+  width: 66px;
+  height: 66px;
+  top: 241px;
+  left: 28px;
+  border-radius: 33px;
+  background-image: url(../img/ChatGPT\ Image\ May\ 20\,\ 2025\ at\ 11_29_55\ PM.png);
+  background-position: fill;
+}
+
+.kelas .ellipse {
+  height: 66px;
+  background-image: url(../img/ChatGPT\ Image\ May\ 20\,\ 2025\ at\ 11_29_55\ PM.png);
+  border-radius: 33px;
+
+}
+
+.kelas .overlap {
+  position: absolute;
+  width: 127px;
+  height: 25px;
+  top: 254px;
+  left: 115px;
+}
+
+.kelas .text-wrapper-2 {
+  position: absolute;
+  width: 90%;
+  top: 0;
+  left: 0;
+  font-family: "Inter-Regular", Helvetica;
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 20px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.kelas .text-wrapper-3 {
+  position: absolute;
+  width: 90%;
+  top: 281px;
+  left: 115px;
+  font-family: "Inter-Regular", Helvetica;
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 12px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.kelas .line {
+  position: absolute;
+  width: 90%;
+  height: 3px;
+  top: 220px;
+  left: 24px;
+  background-image: url(../img/line.png);
+}

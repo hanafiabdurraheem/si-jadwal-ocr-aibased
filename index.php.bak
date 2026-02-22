@@ -1,0 +1,69 @@
+<?php
+header("Location: login/index.php");
+exit();
+?>
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="globals.css" />
+    <link rel="stylesheet" href="styleguide.css" />
+    <link rel="stylesheet" href="style.css?v=<?= time() ?>" />
+  </head>
+<body>
+  <div class="iphone-plus">
+    <header class="header">
+      <div class="overlap-group">
+        <div class="rectangle-2"></div>
+        <div class="backroundblur">
+<a href="login/index.php" class="text-wrapper-2">Login</a>
+<div class="text-wrapper-3" onclick="document.getElementById('signup-section').scrollIntoView({ behavior: 'smooth' });">
+  Sign up
+</div>
+
+
+          <img class="line" src="img-ldg/Line.png" />
+        <img
+          class="sijadwal-logo"
+          src="/../img-ldg/sijadwal-logo.png"
+          style="cursor:pointer"
+          onclick="document.getElementById('target-element').scrollIntoView({ behavior: 'smooth' });"
+        />
+        </div>
+      </div>
+    </header>
+
+    <!-- KONTEN -->
+    <div class="div">
+      <div class="overlap">
+        <div class="rectangle"></div>
+        <img id="target-element" class="element" src="img-ldg/1.png" />
+        <div class="text-wrapper">swipe up for more!</div>
+        <img class="img" src="img-ldg/2.png" />
+      </div>
+
+      <div class="overlap-2">
+        <img class="element-2" src="img-ldg/4.png" />
+        <img class="landing-page" src="img-ldg/landing-page-halaman3.png" />
+        <div class="text-wrapper-4">Dosen Pengampu :</div>
+        <p class="p">Dr. Ir. Satriyo Agung Dewanto S.T., S.Pd.T., M.Pd., IPM., ASEAN Eng.</p>
+        <div class="text-wrapper-5">proyek mandiri j1.1</div>
+        <div class="text-wrapper-6">Hanafi Abdurraheem</div>
+        <div class="text-wrapper-7">22537144012</div>
+        <div class="csv-csv">
+            <a href="starter-file/krs1.csv" download>krs1.csv</a><br />
+            <a href="starter-file/krs2.csv" download>krs2.csv</a><br />
+            <a href="starter-file/krs24jam.csv" download>krs24jam.csv</a>
+        </div>
+        <img class="gradien" src="img-ldg/gradien.png" />
+        <a href="signup.php" id="signup-section" class="text-wrapper-8">start</a>
+
+      </div>
+    </div>
+
+  </div>
+</body>
+
+</html>
