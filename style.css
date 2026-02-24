@@ -311,3 +311,18 @@
     height: 100%;
     overflow-x: hidden;
   }}
+.login .terms {
+  position: absolute;
+  top: 178px;
+  left: 31px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffffff;
+  font-size: 10px;
+}
+
+.login .terms input {
+  width: 14px;
+  height: 14px;
+}

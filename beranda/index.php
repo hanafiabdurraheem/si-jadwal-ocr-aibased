@@ -36,6 +36,9 @@ $username = $_SESSION['username'];
           echo strftime('%A, %d %B');
         ?>
       </span>
+      <?php if (isset($_GET['notice']) && $_GET['notice'] === 'updated'): ?>
+        <div id="toastNotice" class="toast-notice">Perubahan sudah dilakukan</div>
+      <?php endif; ?>
       
         
           <div class="overlap" style="cursor: pointer;" onclick="openModal()">
@@ -68,20 +71,6 @@ $username = $_SESSION['username'];
 
 
         <img class="user"/>
-        <div class="frame">
-          <form action="../tugas/tugas-list/index.php" method="GET" style="all: unset;">
-            <button type="submit" style="all: unset; cursor: pointer;">
-              <div class="group">
-                <div class="overlap-group">
-                  <div class="rectangle"></div>
-                  <div class="rectangle-2"></div>
-                  <div class="interface-edit-grid"></div>
-                  <div class="interface-setting"><img class="img"/></div>
-                </div>
-              </div>
-            </button>
-          </form>
-        </div>       
 
       
     
@@ -119,6 +108,21 @@ $username = $_SESSION['username'];
 
     <script>
   document.addEventListener("DOMContentLoaded", function () {
+    const toast = document.getElementById('toastNotice');
+    if (toast) {
+      setTimeout(() => {
+        toast.classList.add('show');
+      }, 100);
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+      if (window.history && window.history.replaceState) {
+        const url = new URL(window.location);
+        url.searchParams.delete('notice');
+        window.history.replaceState({}, document.title, url.pathname + url.search);
+      }
+    }
+
     window.openModal = function () {
       document.getElementById('popupOverlay').style.display = 'block';
       document.getElementById('popupModal').style.display = 'block';

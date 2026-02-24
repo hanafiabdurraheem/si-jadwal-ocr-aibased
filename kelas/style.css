@@ -1,88 +1,167 @@
 .kelas {
-  background-color: #1d1d1d;
+  background-color: #0f0f10;
   display: flex;
-  flex-direction: row;
   justify-content: center;
   width: 100%;
+  min-height: 100vh;
+  color: #ffffff;
+  font-family: "Poppins", Arial, sans-serif;
 }
 
-.kelas .div {
-  background-color: #1d1d1d;
-  width: 430px;
-  height: 100vh;
-  position: relative;
+.container {
+  width: 100%;
+  max-width: 430px;
+  padding: 28px 20px 120px;
+  box-sizing: border-box;
 }
 
-.kelas .text-wrapper {
-  position: absolute;
-  width: 90%;
-  top: 134px;
-  left: 24px;
-  font-family: "Poppins-Bold", Helvetica;
+.header h1 {
+  margin: 0 0 6px;
+  font-size: 24px;
   font-weight: 700;
-  color: #ffffff;
-  font-size: 32px;
-  letter-spacing: 0;
-  line-height: normal;
 }
 
-.kelas .overlap-group {
-  position: absolute;
-  width: 66px;
-  height: 66px;
-  top: 241px;
-  left: 28px;
-  border-radius: 33px;
-  background-image: url(../img/ChatGPT\ Image\ May\ 20\,\ 2025\ at\ 11_29_55\ PM.png);
-  background-position: fill;
+.header p {
+  margin: 0;
+  color: #b0b0b8;
+  font-size: 13px;
 }
 
-.kelas .ellipse {
-  height: 66px;
-  background-image: url(../img/ChatGPT\ Image\ May\ 20\,\ 2025\ at\ 11_29_55\ PM.png);
-  border-radius: 33px;
-
+.section {
+  margin-top: 24px;
 }
 
-.kelas .overlap {
-  position: absolute;
-  width: 127px;
-  height: 25px;
-  top: 254px;
-  left: 115px;
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
 }
 
-.kelas .text-wrapper-2 {
-  position: absolute;
-  width: 90%;
-  top: 0;
-  left: 0;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  color: #ffffff;
-  font-size: 20px;
-  letter-spacing: 0;
-  line-height: normal;
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.kelas .text-wrapper-3 {
-  position: absolute;
-  width: 90%;
-  top: 281px;
-  left: 115px;
-  font-family: "Inter-Regular", Helvetica;
-  font-weight: 400;
-  color: #ffffff;
+.task-card {
+  background: #1b1b1f;
+  border: 1px solid #2b2b33;
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.task-card.late {
+  border-color: #f87171;
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.4);
+}
+
+.task-card.done {
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.task-card.archived {
+  border-color: rgba(251, 191, 36, 0.5);
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.task-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.task-subtitle {
   font-size: 12px;
-  letter-spacing: 0;
-  line-height: normal;
+  color: #c7c7d1;
+  margin-top: 4px;
 }
 
-.kelas .line {
-  position: absolute;
-  width: 90%;
-  height: 3px;
-  top: 220px;
-  left: 24px;
-  background-image: url(../img/line.png);
+.task-time {
+  text-align: right;
+  font-size: 12px;
+  color: #c7c7d1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.task-detail {
+  display: none;
+  border-top: 1px solid #2b2b33;
+  padding-top: 12px;
+  font-size: 12px;
+  color: #e5e5ea;
+  gap: 6px;
+  flex-direction: column;
+}
+
+.task-card.open .task-detail {
+  display: flex;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.detail-row span {
+  color: #a0a0ac;
+}
+
+.task-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.task-actions form {
+  margin: 0;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-warning,
+.btn-danger {
+  border: none;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #ffffff;
+}
+
+.btn-primary {
+  background: #6552fe;
+}
+
+.btn-secondary {
+  background: #2b2b33;
+}
+
+.btn-warning {
+  background: #f59e0b;
+}
+
+.btn-danger {
+  background: #ef4444;
+}
+
+.empty-state {
+  color: #b0b0b8;
+  font-size: 13px;
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: 520px;
+  }
 }

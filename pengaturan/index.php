@@ -1,11 +1,151 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Check if user is logged in
 if (empty($_SESSION['username'])) {
     header("Location: ../login/index.php");
     exit();
 }
+
+require_once __DIR__ . '/../backend/schedule_store.php';
+
+$messages = [];
+$errors = [];
+$tab = $_GET['tab'] ?? 'jadwal';
+if (!in_array($tab, ['jadwal', 'akun'], true)) {
+    $tab = 'jadwal';
+}
+
+function db_connect() {
+    $conn = new mysqli("localhost", "root", "", "userdb");
+    if ($conn->connect_error) {
+        return null;
+    }
+    return $conn;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
+    $username = $_SESSION['username'];
+
+    if ($action === 'update_username') {
+        $newUsername = trim($_POST['new_username'] ?? '');
+        $currentPassword = $_POST['current_password'] ?? '';
+
+        if ($newUsername === '' || $currentPassword === '') {
+            $errors[] = 'Username baru dan password saat ini wajib diisi.';
+        } else if ($newUsername === $username) {
+            $errors[] = 'Username baru tidak boleh sama dengan username lama.';
+        } else {
+            $conn = db_connect();
+            if (!$conn) {
+                $errors[] = 'Gagal koneksi ke database.';
+            } else {
+                $check = $conn->prepare("SELECT username FROM users WHERE username = ?");
+                $check->bind_param("s", $newUsername);
+                $check->execute();
+                $check->store_result();
+
+                if ($check->num_rows > 0) {
+                    $errors[] = 'Username baru sudah digunakan.';
+                } else {
+                    $stmt = $conn->prepare("SELECT password FROM users WHERE username = ?");
+                    $stmt->bind_param("s", $username);
+                    $stmt->execute();
+                    $stmt->bind_result($hashedPassword);
+
+                    if ($stmt->fetch() && password_verify($currentPassword, $hashedPassword)) {
+                        $stmt->close();
+                        $update = $conn->prepare("UPDATE users SET username = ? WHERE username = ?");
+                        $update->bind_param("ss", $newUsername, $username);
+                        if ($update->execute()) {
+                            $oldDir = __DIR__ . "/../uploads/$username";
+                            $newDir = __DIR__ . "/../uploads/$newUsername";
+
+                            if (is_dir($oldDir)) {
+                                if (is_dir($newDir)) {
+                                    $errors[] = 'Folder user baru sudah ada. Perubahan dibatalkan.';
+                                    $rollback = $conn->prepare("UPDATE users SET username = ? WHERE username = ?");
+                                    $rollback->bind_param("ss", $username, $newUsername);
+                                    $rollback->execute();
+                                } else if (!rename($oldDir, $newDir)) {
+                                    $errors[] = 'Gagal memindahkan folder user. Perubahan dibatalkan.';
+                                    $rollback = $conn->prepare("UPDATE users SET username = ? WHERE username = ?");
+                                    $rollback->bind_param("ss", $username, $newUsername);
+                                    $rollback->execute();
+                                } else {
+                                    $_SESSION['username'] = $newUsername;
+                                    $messages[] = 'Username berhasil diperbarui.';
+                                }
+                            } else {
+                                $_SESSION['username'] = $newUsername;
+                                $messages[] = 'Username berhasil diperbarui.';
+                            }
+                        } else {
+                            $errors[] = 'Gagal memperbarui username.';
+                        }
+                        $update->close();
+                    } else {
+                        $errors[] = 'Password saat ini tidak valid.';
+                    }
+                    $stmt->close();
+                }
+                $check->close();
+                $conn->close();
+            }
+        }
+    }
+
+    if ($action === 'update_password') {
+        $currentPassword = $_POST['current_password'] ?? '';
+        $newPassword = $_POST['new_password'] ?? '';
+        $confirmPassword = $_POST['confirm_password'] ?? '';
+
+        if ($currentPassword === '' || $newPassword === '' || $confirmPassword === '') {
+            $errors[] = 'Semua field password wajib diisi.';
+        } else if ($newPassword !== $confirmPassword) {
+            $errors[] = 'Konfirmasi password tidak cocok.';
+        } else {
+            $conn = db_connect();
+            if (!$conn) {
+                $errors[] = 'Gagal koneksi ke database.';
+            } else {
+                $stmt = $conn->prepare("SELECT password FROM users WHERE username = ?");
+                $stmt->bind_param("s", $username);
+                $stmt->execute();
+                $stmt->bind_result($hashedPassword);
+
+                if ($stmt->fetch() && password_verify($currentPassword, $hashedPassword)) {
+                    $stmt->close();
+                    $newHashed = password_hash($newPassword, PASSWORD_DEFAULT);
+                    $update = $conn->prepare("UPDATE users SET password = ? WHERE username = ?");
+                    $update->bind_param("ss", $newHashed, $username);
+                    if ($update->execute()) {
+                        $messages[] = 'Password berhasil diperbarui.';
+                    } else {
+                        $errors[] = 'Gagal memperbarui password.';
+                    }
+                    $update->close();
+                } else {
+                    $errors[] = 'Password saat ini tidak valid.';
+                }
+                $stmt->close();
+                $conn->close();
+            }
+        }
+    }
+}
+
+$username = $_SESSION['username'];
+$scheduleIndex = load_schedule_index($username);
+$scheduleItems = $scheduleIndex['items'] ?? [];
+
+usort($scheduleItems, function ($a, $b) {
+    return strcmp($b['created_at'] ?? '', $a['created_at'] ?? '');
+});
+
+$userDir = schedule_user_dir($username);
 ?>
 
 <!DOCTYPE html>
@@ -19,34 +159,143 @@ if (empty($_SESSION['username'])) {
   </head>
   <body>
     <div class="pengaturan">
-      <div class="div">
-        <div class="overlap-group">
-          <div class="text-wrapper">Tampilan (upcoming update)</div>
-          <div class="interface-weather"><img class="group" src="../img/interface-weather-sun--photos-light-camera-mode-brightness-sun-photo-full--Streamline-Core.png" /></div>
+      <div class="container">
+        <div class="header">
+          <h1>Pengaturan</h1>
+          <p>Kelola jadwal dan akun Anda.</p>
         </div>
-        <div class="overlap">
-          <div class="interface-file"><img class="img" src="../img/interface-file-multiple--double-common-file--Streamline-Core.png" /></div>
-          <div class="text-wrapper-2">Jadwal (upcoming update)</div>
+
+        <?php if (!empty($messages)): ?>
+          <div class="alert success"><?php echo htmlspecialchars(implode(' ', $messages)); ?></div>
+        <?php endif; ?>
+        <?php if (!empty($errors)): ?>
+          <div class="alert error"><?php echo htmlspecialchars(implode(' ', $errors)); ?></div>
+        <?php endif; ?>
+
+        <div class="tabs">
+          <a class="tab <?php echo $tab === 'jadwal' ? 'active' : ''; ?>" href="?tab=jadwal">Jadwal</a>
+          <a class="tab <?php echo $tab === 'akun' ? 'active' : ''; ?>" href="?tab=akun">Akun</a>
         </div>
-        <div class="overlap-2">
-          <div class="group-wrapper"><img class="img" src="../img/interface-file-clipboard-add--edit-task-edition-add-clipboard-form--Streamline-Core.png" /></div>
-          <div class="text-wrapper-3">Tugas (upcoming update)</div>
-        </div>
-        <div class="overlap-3">
-          <div class="interface-time-alarm"><img class="group-2" src="../img/interface-time-alarm--notification-alert-bell-wake-clock-alarm--Streamline-Core.png" /></div>
-          <div class="text-wrapper-4">Alarm (upcoming update)</div>
-        </div>
-        
-        </div>
-        <div class="text-wrapper-6">Pengaturan</div>
-        <img class="line" src="../img/line.png" />
-        
-        <a href="../backend/logout.php" class="tambah">
-  <div class="tambah-2">Logout</div>
-        </div>
-      <?php include '../nav.php'; ?>
+
+        <?php if ($tab === 'jadwal'): ?>
+        <section class="section">
+          <div class="section-title">List Jadwal</div>
+          <?php if (empty($scheduleItems)): ?>
+            <div class="empty-state">Belum ada jadwal yang tersimpan.</div>
+          <?php else: ?>
+            <div class="schedule-list">
+              <?php foreach ($scheduleItems as $item): ?>
+                <?php
+                  $itemId = $item['id'] ?? '';
+                  $paths = schedule_item_paths($username, $item);
+                  $csvUrl = !empty($item['csv']) ? ('../uploads/' . $username . '/' . ltrim($item['csv'], '/')) : null;
+                  $jsonUrl = !empty($item['json']) ? ('../uploads/' . $username . '/' . ltrim($item['json'], '/')) : null;
+                  $folder = !empty($paths['csv']) ? dirname($paths['csv']) : null;
+                  $photoFiles = [];
+                  if ($itemId !== 'legacy' && $folder && is_dir($folder)) {
+                      $photoFiles = glob($folder . '/original*');
+                  }
+                  $createdAt = $item['created_at'] ?? '';
+                  $createdLabel = $createdAt ? date('d M Y H:i', strtotime($createdAt)) : '';
+                ?>
+                <div class="schedule-card" data-id="<?php echo htmlspecialchars($itemId); ?>">
+                  <div class="schedule-header">
+                    <div>
+                      <div class="schedule-name"><?php echo htmlspecialchars($item['name'] ?? 'Jadwal'); ?></div>
+                      <div class="schedule-meta"><?php echo htmlspecialchars($createdLabel); ?></div>
+                    </div>
+                    <div class="schedule-actions">
+                      <?php if ($csvUrl): ?>
+                        <a class="btn-link" href="<?php echo htmlspecialchars($csvUrl); ?>" download>CSV</a>
+                      <?php endif; ?>
+                      <?php if ($jsonUrl): ?>
+                        <a class="btn-link" href="<?php echo htmlspecialchars($jsonUrl); ?>" download>JSON</a>
+                      <?php endif; ?>
+                      <?php if ($itemId !== 'legacy'): ?>
+                        <button class="btn-danger delete-schedule" type="button" data-id="<?php echo htmlspecialchars($itemId); ?>">Hapus</button>
+                      <?php endif; ?>
+                    </div>
+                  </div>
+                  <div class="photo-strip">
+                    <?php if (!empty($photoFiles)): ?>
+                      <?php foreach ($photoFiles as $photo): ?>
+                        <?php $relative = str_replace($userDir . '/', '', $photo); ?>
+                        <a href="../uploads/<?php echo htmlspecialchars($username); ?>/<?php echo htmlspecialchars($relative); ?>" target="_blank">
+                          <img src="../uploads/<?php echo htmlspecialchars($username); ?>/<?php echo htmlspecialchars($relative); ?>" alt="Foto Jadwal">
+                        </a>
+                      <?php endforeach; ?>
+                    <?php else: ?>
+                      <div class="no-photo">Tidak ada foto yang tersimpan.</div>
+                    <?php endif; ?>
+                  </div>
+                </div>
+              <?php endforeach; ?>
+            </div>
+          <?php endif; ?>
+        </section>
+        <?php endif; ?>
+
+        <?php if ($tab === 'akun'): ?>
+        <section class="section">
+          <div class="section-title">Akun</div>
+          <div class="account-grid">
+            <form class="account-card" method="POST">
+              <input type="hidden" name="action" value="update_username">
+              <div class="card-title">Ganti Username</div>
+              <label>Username baru</label>
+              <input type="text" name="new_username" placeholder="Username baru" required>
+              <label>Password saat ini</label>
+              <input type="password" name="current_password" placeholder="Password saat ini" required>
+              <button type="submit" class="btn-primary">Simpan</button>
+            </form>
+
+            <form class="account-card" method="POST">
+              <input type="hidden" name="action" value="update_password">
+              <div class="card-title">Ganti Password</div>
+              <label>Password saat ini</label>
+              <input type="password" name="current_password" placeholder="Password saat ini" required>
+              <label>Password baru</label>
+              <input type="password" name="new_password" placeholder="Password baru" required>
+              <label>Konfirmasi password</label>
+              <input type="password" name="confirm_password" placeholder="Konfirmasi password" required>
+              <button type="submit" class="btn-primary">Simpan</button>
+            </form>
+          </div>
+        </section>
+        <?php endif; ?>
+
+        <a href="../backend/logout.php" class="logout">Logout</a>
+      </div>
     </div>
 
+    <?php include '../nav.php'; ?>
 
+    <script>
+      document.querySelectorAll('.delete-schedule').forEach(button => {
+        button.addEventListener('click', async () => {
+          const scheduleId = button.dataset.id;
+          if (!confirm('Hapus jadwal ini?')) {
+            return;
+          }
+          try {
+            const response = await fetch('../backend/delete_schedule.php', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ scheduleId })
+            });
+            const data = await response.json();
+            if (!data.ok) {
+              throw new Error(data.message || 'Gagal menghapus jadwal');
+            }
+            const card = button.closest('.schedule-card');
+            if (card) {
+              card.remove();
+            }
+          } catch (err) {
+            alert('Gagal menghapus jadwal.');
+          }
+        });
+      });
+    </script>
   </body>
 </html>

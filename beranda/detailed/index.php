@@ -10,9 +10,10 @@ if (empty($_SESSION['username'])) {
 }
 
 $username = $_SESSION['username'];
-$csvPath = __DIR__ . '/../../uploads/' . $username . '/Kartu-Rencana-Studi_Aktif.csv';
+require_once __DIR__ . '/../../backend/schedule_store.php';
+$csvPath = resolve_active_schedule_csv($username);
 
-if (!file_exists($csvPath)) {
+if (!$csvPath || !file_exists($csvPath)) {
     echo "⚠️ File tidak ditemukan.";
     exit;
 }
@@ -208,4 +209,3 @@ $jadwalYangDitampilkan = $jadwalTerdekat ?? $jadwalSedangBerlangsung;
   </a>
 </body>
 </html>
-

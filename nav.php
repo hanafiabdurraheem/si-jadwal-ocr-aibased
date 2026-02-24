@@ -9,7 +9,7 @@
     <img src="../img/tugas.svg" alt="Tugas" width="24"><br><small>Tugas</small>
   </a>
   <a href="../kelas/index.php" class="nav-item">
-    <img src="../img/kelas.svg" alt="Kelas" width="24"><br><small>Kelas</small>
+    <img src="../img/pengingat.svg" alt="Pengingat" width="24"><br><small>Pengingat</small>
   </a>
   <a href="../pengaturan/index.php" class="nav-item">
     <img src="../img/pengaturan.svg" alt="Pengaturan" width="24"><br><small>Pengaturan</small>
@@ -142,6 +142,7 @@
   margin-bottom: 1px;
   width: 24px;
   height: 24px;
+  object-fit: contain;
 }
 
 .nav-item small {

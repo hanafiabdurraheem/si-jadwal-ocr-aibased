@@ -2,13 +2,9 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+require_once __DIR__ . '/schedule_store.php';
 
-$username = $_SESSION['username'];
-$files = glob("uploads/$username/*.json"); // atau *.txt sesuai tipe file
-foreach ($files as $file) {
-    $data = file_get_contents($file);
-    // Proses file sesuai kebutuhan kamu
-}
+$username = $_SESSION['username'] ?? '';
 
 
 date_default_timezone_set('Asia/Jakarta'); // Pastikan zona waktu benar
@@ -27,56 +23,51 @@ $mapHari = [
 
 $hariIndonesia = $mapHari[$hariIni] ?? '';
 
-// Path ke file CSV
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-$username = $_SESSION['username'] ?? '';
+// Path ke file aktif (JSON diutamakan)
+$jsonPath = resolve_active_schedule_json($username);
+$csvPath = resolve_active_schedule_csv($username);
 
-$csvPath = __DIR__ . '/../uploads/' . $username . '/Kartu-Rencana-Studi_Aktif.csv';
+$rows = [];
 
-if (!file_exists($csvPath)) {
-    echo "⚠️ File krs6.csv tidak ditemukan.";
-    exit;
-}
-
-$data = array_map('str_getcsv', file($csvPath));
-$header = array_shift($data);
-
-// Tentukan kolom yang ingin ditampilkan
-$kolomYangDitampilkan = ["Nama Matakuliah", "Jam Mulai", "Jam Selesai", "Ruang"];
-
-// Temukan index kolom 'Hari'
-$indexHari = array_search("Hari", $header);
-if ($indexHari === false) {
-    echo "❌ Kolom 'Hari' tidak ditemukan dalam CSV.";
-    exit;
-}
-
-// Temukan index kolom-kolom yang ingin ditampilkan
-$indexKolom = [];
-foreach ($kolomYangDitampilkan as $kolom) {
-    $idx = array_search($kolom, $header);
-    if ($idx !== false) {
-        $indexKolom[$kolom] = $idx;
+if ($jsonPath && file_exists($jsonPath)) {
+    $rows = json_decode(file_get_contents($jsonPath), true);
+    if (!is_array($rows)) {
+        $rows = [];
     }
 }
 
+if (empty($rows) && $csvPath && file_exists($csvPath)) {
+    $data = array_map('str_getcsv', file($csvPath));
+    $header = array_shift($data);
+    foreach ($data as $row) {
+        $combined = array_combine($header, $row);
+        if ($combined !== false) {
+            $rows[] = $combined;
+        }
+    }
+}
+
+if (empty($rows)) {
+    echo "⚠️ File jadwal tidak ditemukan.";
+    exit;
+}
+
+// Tentukan kolom yang ingin ditampilkan
+// Kolom yang ingin ditampilkan
+$kolomYangDitampilkan = ["Nama Matakuliah", "Jam Mulai", "Jam Selesai", "Ruang"];
+
 // Filter berdasarkan hari ini
-$filtered = array_filter($data, function ($row) use ($indexHari, $hariIndonesia) {
-    return isset($row[$indexHari]) && $row[$indexHari] === $hariIndonesia;
+// Filter berdasarkan hari ini
+$filtered = array_filter($rows, function ($row) use ($hariIndonesia) {
+    return isset($row['Hari']) && trim($row['Hari']) === $hariIndonesia;
 });
-// Temukan index kolom "Jam Mulai"
-$indexJamMulai = array_search("Jam Mulai", $header);
 
 // Urutkan berdasarkan "Jam Mulai" secara menaik
-if ($indexJamMulai !== false) {
-    usort($filtered, function ($a, $b) use ($indexJamMulai) {
-        $timeA = strtotime($a[$indexJamMulai]);
-        $timeB = strtotime($b[$indexJamMulai]);
-        return $timeA <=> $timeB;
-    });
-}
+usort($filtered, function ($a, $b) {
+    $timeA = strtotime(str_replace('.', ':', $a['Jam Mulai'] ?? ''));
+    $timeB = strtotime(str_replace('.', ':', $b['Jam Mulai'] ?? ''));
+    return $timeA <=> $timeB;
+});
 
 
 
@@ -88,15 +79,15 @@ if (empty($filtered)) {
 } else {
     echo "<table border='1' cellpadding='6' cellspacing='0'>";
     echo "<tr>";
-    foreach ($indexKolom as $namaKolom => $idx) {
+    foreach ($kolomYangDitampilkan as $namaKolom) {
         echo "<th>" . htmlspecialchars($namaKolom) . "</th>";
     }
     echo "</tr>";
 
     foreach ($filtered as $row) {
         echo "<tr>";
-        foreach ($indexKolom as $idx) {
-            echo "<td>" . htmlspecialchars($row[$idx] ?? '-') . "</td>";
+        foreach ($kolomYangDitampilkan as $kolom) {
+            echo "<td>" . htmlspecialchars($row[$kolom] ?? '-') . "</td>";
         }
         echo "</tr>";
     }

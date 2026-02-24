@@ -2,17 +2,24 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-session_start();; 
+session_start();
+$error = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST["username"];
     $passwordPlain = $_POST["password"];
+    $agreeTerms = isset($_POST["agree_terms"]);
 
-    $conn = new mysqli("localhost", "root", "", "userdb");
-
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
+    if (!$agreeTerms) {
+        $error = "Anda harus menyetujui syarat dan ketentuan.";
     }
+
+    if (empty($error)) {
+        $conn = new mysqli("localhost", "root", "", "userdb");
+
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
+        }
 
     // Cek apakah username sudah ada
     $check = $conn->prepare("SELECT username FROM users WHERE username = ?");
@@ -20,19 +27,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $check->execute();
     $check->store_result();
 
-    if ($check->num_rows > 0) {
-        // User sudah ada
-        $_SESSION['message'] = "⚠️ Username sudah terdaftar. Silakan login.";
-        header("Location: login/index.php");
-        exit;
-    }
+        if ($check->num_rows > 0) {
+            // User sudah ada
+            $_SESSION['message'] = "⚠️ Username sudah terdaftar. Silakan login.";
+            header("Location: login/index.php");
+            exit;
+        }
 
     // Jika belum ada, lanjut registrasi
     $passwordHashed = password_hash($passwordPlain, PASSWORD_DEFAULT);
     $stmt = $conn->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
     $stmt->bind_param("ss", $username, $passwordHashed);
 
-    if ($stmt->execute()) {
+        if ($stmt->execute()) {
         // Buat folder user
         $userFolder = __DIR__ . "/uploads/$username";
         if (!is_dir($userFolder)) {
@@ -50,13 +57,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         fclose($fp);
 
-        $_SESSION['message'] = "✅ Registrasi berhasil. Silakan login.";
-        header("Location: login/index.php");
-        exit;
-    } else {
-        $_SESSION['message'] = "❌ Gagal menyimpan data.";
-        header("Location: register.php");
-        exit;
+            $_SESSION['message'] = "✅ Registrasi berhasil. Silakan login.";
+            header("Location: login/index.php");
+            exit;
+        } else {
+            $_SESSION['message'] = "❌ Gagal menyimpan data.";
+            header("Location: register.php");
+            exit;
+        }
     }
 }
 ?>
@@ -103,6 +111,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
           <div class="text-wrapper-29">Password Baru</div>
           <input type="password" name="password" class="password" placeholder="Password" required>
+
+          <label class="terms">
+            <input type="checkbox" name="agree_terms" required>
+            Saya menyetujui syarat dan ketentuan
+          </label>
 
           <button type="submit" class="text-wrapper-3">Sign Up</button>
         </div>
