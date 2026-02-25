@@ -1,17 +1,14 @@
 <?php
 session_start();
+require_once __DIR__ . '/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    $conn = new mysqli("localhost", "root", "", "userdb");
+    $conn = db_connect();
 
-    if ($conn->connect_error) {
-        die("Koneksi ke database gagal: " . $conn->connect_error);
-    }
-
-    $stmt = $conn->prepare("SELECT password FROM users WHERE username = ?");
+    $stmt = $conn->prepare("SELECT password FROM `user` WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $stmt->store_result();

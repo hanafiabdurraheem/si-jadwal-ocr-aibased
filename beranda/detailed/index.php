@@ -11,14 +11,19 @@ if (empty($_SESSION['username'])) {
 
 $username = $_SESSION['username'];
 require_once __DIR__ . '/../../backend/schedule_store.php';
-$csvPath = resolve_active_schedule_csv($username);
+require_once __DIR__ . '/../../backend/db.php';
 
-if (!$csvPath || !file_exists($csvPath)) {
-    echo "⚠️ File tidak ditemukan.";
+$active = resolve_active_schedule_item($username);
+if (!$active) {
+    echo "⚠️ Jadwal aktif tidak ditemukan.";
     exit;
 }
 
-$data = array_map('str_getcsv', file($csvPath));
+$rowsDb = get_schedule_rows($username, $active['id']);
+if (empty($rowsDb)) {
+    echo "⚠️ Jadwal kosong.";
+    exit;
+}
 
 date_default_timezone_set('Asia/Jakarta');
 $hariIni = date('l');
@@ -35,49 +40,32 @@ $mapHari = [
 
 $hariIndonesia = $mapHari[$hariIni] ?? '';
 
-$header = array_shift($data);
+$fields = [
+    ['label' => 'Nama Matakuliah', 'key' => 'nama_matakuliah', 'icon' => 'daring2.png'],
+    ['label' => 'Hari', 'key' => 'hari', 'icon' => 'hari2.png'],
+    ['label' => 'Jam Mulai', 'key' => 'jam_mulai', 'icon' => 'jam2.png'],
+    ['label' => 'Jam Selesai', 'key' => 'jam_selesai', 'icon' => 'kosong2.png'],
+    ['label' => 'Ruang', 'key' => 'ruang', 'icon' => 'kelas3.png'],
+    ['label' => 'Pengampu', 'key' => 'pengampu', 'icon' => 'dosen3.png'],
+];
 
-// Kolom yang ingin ditampilkan
-$kolomYangDitampilkan = ["Nama Matakuliah", "Hari", "Jam Mulai", "Jam Selesai", "Ruang", "Pengampu"];
-
-// Temukan index kolom
-$indexHari = array_search("Hari", $header);
-$indexJam = array_search("Jam Mulai", $header);
-
-if ($indexHari === false || $indexJam === false) {
-    echo "❌ Kolom 'Hari' atau 'Jam Mulai' tidak ditemukan.";
-    exit;
-}
-
-$indexKolom = [];
-foreach ($kolomYangDitampilkan as $kolom) {
-    $idx = array_search($kolom, $header);
-    if ($idx !== false) {
-        $indexKolom[$kolom] = $idx;
-    }
-}
-
-// Filter berdasarkan hari ini
-$filtered = array_filter($data, function ($row) use ($indexHari, $hariIndonesia) {
-    return isset($row[$indexHari]) && $row[$indexHari] === $hariIndonesia;
+$filtered = array_filter($rowsDb, function ($row) use ($hariIndonesia) {
+    return isset($row['hari']) && $row['hari'] === $hariIndonesia;
 });
 
-// Urutkan berdasarkan "Jam Mulai"
-usort($filtered, function ($a, $b) use ($indexJam) {
-    $timeA = strtotime($a[$indexJam]);
-    $timeB = strtotime($b[$indexJam]);
+usort($filtered, function ($a, $b) {
+    $timeA = strtotime(str_replace('.', ':', $a['jam_mulai'] ?? ''));
+    $timeB = strtotime(str_replace('.', ':', $b['jam_mulai'] ?? ''));
     return $timeA <=> $timeB;
 });
 
 $now = strtotime(date('H:i'));
-
-$indexSelesai = array_search("Jam Selesai", $header);
 $jadwalTerdekat = null;
 $jadwalSedangBerlangsung = null;
 
 foreach ($filtered as $row) {
-    $jamMulai = strtotime($row[$indexJam] ?? '');
-    $jamSelesai = strtotime($row[$indexSelesai] ?? '');
+    $jamMulai = strtotime(str_replace('.', ':', $row['jam_mulai'] ?? ''));
+    $jamSelesai = strtotime(str_replace('.', ':', $row['jam_selesai'] ?? ''));
 
     if ($jamMulai !== false && $jamMulai >= $now && !$jadwalTerdekat) {
         $jadwalTerdekat = $row;
@@ -88,7 +76,6 @@ foreach ($filtered as $row) {
     }
 }
 
-// Prioritaskan jadwal terdekat, jika tidak ada tampilkan yang sedang berlangsung
 $jadwalYangDitampilkan = $jadwalTerdekat ?? $jadwalSedangBerlangsung;
 ?>
 
@@ -167,7 +154,7 @@ $jadwalYangDitampilkan = $jadwalTerdekat ?? $jadwalSedangBerlangsung;
 }
 </style>
 
-<body style="margin: 0; padding: 0;">
+<body style="margin: 0; padding: 0; background: transparent;">
   <a href="../beranda/index.php" style="display: block; width: 100%; height: 250px; text-decoration: none; color: inherit;">
     <div class="detailed-upcoming">
       <div class="overlap-wrapper">
@@ -181,22 +168,12 @@ $jadwalYangDitampilkan = $jadwalTerdekat ?? $jadwalSedangBerlangsung;
             </div>";
         } else {
             echo "<div class='jadwal-container'>";
-
-            $iconMap = [
-                "Nama Matakuliah" => "daring2.png",
-                "Hari" => "hari2.png",
-                "Jam Mulai" => "jam2.png",
-                "Jam Selesai" => "kosong2.png",
-                "Ruang" => "kelas3.png",
-                "Pengampu" => "dosen3.png"
-            ];
-
-            foreach ($indexKolom as $label => $idx) {
-                $iconPath = 'detailed/img/' . ($iconMap[$label] ?? 'default.png');
-                $value = htmlspecialchars($jadwalYangDitampilkan[$idx] ?? '-');
-
+            foreach ($fields as $field) {
+                $iconPath = 'detailed/img/' . $field['icon'];
+                $value = htmlspecialchars($jadwalYangDitampilkan[$field['key']] ?? '-');
+                $label = htmlspecialchars($field['label']);
                 echo "<div class='jadwal-value-only'>
-                        <img src='$iconPath' class='jadwal-icon' alt='$label icon' />
+                        <img src='$iconPath' class='jadwal-icon' alt='{$label} icon' />
                         $value
                       </div>";
             }

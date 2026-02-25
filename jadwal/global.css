@@ -16,3 +16,7 @@ button:focus-visible {
 a {
   text-decoration: none;
 }
+
+* {
+  font-family: Helvetica, Arial, sans-serif !important;
+}

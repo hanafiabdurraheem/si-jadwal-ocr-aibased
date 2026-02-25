@@ -13,29 +13,30 @@ if (empty($_SESSION['username'])) {
 }
 
 $username = $_SESSION['username'];
-$userFolder = __DIR__ . '/../uploads/' . $username;
-$csvPath = $userFolder . '/Kartu-Rencana-Studi_Aktif.csv';
-$tugasPath = $userFolder . '/tugas.csv';
+require_once __DIR__ . '/../backend/schedule_store.php';
+require_once __DIR__ . '/../backend/task_store.php';
 
-// Menyimpan data ke CSV jika form disubmit
+$scheduleActive = resolve_active_schedule_item($username);
+$rowsMatkul = $scheduleActive ? get_schedule_rows($username, $scheduleActive['id']) : [];
+$mataKuliahList = [];
+foreach ($rowsMatkul as $row) {
+    if (!empty($row['nama_matakuliah'])) {
+        $mataKuliahList[] = trim($row['nama_matakuliah']);
+    }
+}
+$mataKuliahList = array_values(array_unique($mataKuliahList));
+sort($mataKuliahList);
+
+// Menyimpan data ke DB jika form disubmit
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $mataKuliah = $_POST['mata_kuliah'] ?? '';
     $jenisKegiatan = $_POST['jenis_kegiatan'] ?? '';
     $deadline = $_POST['status_tugas'] ?? '';
 
     if ($mataKuliah && $jenisKegiatan && $deadline) {
-        $data = [$mataKuliah, $jenisKegiatan, $deadline];
-        $file = fopen($tugasPath, 'a');
-
-        if ($file !== false) {
-            fputcsv($file, $data);
-            fclose($file);
-
-            header("Location: ../tugas/tugas-list/index.php");
-            exit;
-        } else {
-            echo "❌ Gagal menulis ke file CSV.";
-        }
+        task_add($username, $mataKuliah, $jenisKegiatan, $deadline, null);
+        header("Location: ../kelas/index.php?notice=task_added");
+        exit;
     } else {
         echo "⚠️ Semua field harus diisi.";
     }
@@ -68,39 +69,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
               <label for="mataKuliahDropdown" class="text-wrapper-5"></label>
               <select id="mataKuliahDropdown" class="dropdown" name="mata_kuliah" required>
                 <option value="">-- Pilih Mata Kuliah --</option>
-                <?php
-                $username = $_SESSION['username'];
-                if (file_exists($csvPath)) 
-                    {
-                    $data = array_map('str_getcsv', file($csvPath));
-                    $header = array_shift($data);
-                    $indexMatkul = array_search("Nama Matakuliah", $header);
-
-                    if ($indexMatkul !== false) {
-                        $mataKuliahList = [];
-
-                        // Ambil semua nilai unik dari kolom "Nama Matakuliah"
-                        foreach ($data as $row) {
-                            if (!empty($row[$indexMatkul])) {
-                                $mataKuliahList[] = trim($row[$indexMatkul]);
-                            }
-                        }
-
-                        // Hapus duplikat dan urutkan
-                        $mataKuliahList = array_unique($mataKuliahList);
-                        sort($mataKuliahList);
-
-                        // Tampilkan sebagai <option>
-                        foreach ($mataKuliahList as $matkul) {
-                            echo "<option value=\"" . htmlspecialchars($matkul) . "\">" . htmlspecialchars($matkul) . "</option>";
-                        }
-                    } else {
-                        echo "<option disabled>Kolom 'Nama Matakuliah' tidak ditemukan</option>";
-                    }
-                } else {
-                    echo "<option disabled>File tidak ditemukan</option>";
-                }
-                ?>
+                <?php if (!empty($mataKuliahList)): ?>
+                    <?php foreach ($mataKuliahList as $matkul): ?>
+                        <option value="<?= htmlspecialchars($matkul) ?>"><?= htmlspecialchars($matkul) ?></option>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <option disabled>Jadwal aktif tidak ditemukan</option>
+                <?php endif; ?>
               </select>
             </div>
 

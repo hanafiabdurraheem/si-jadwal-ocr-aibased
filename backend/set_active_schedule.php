@@ -27,4 +27,7 @@ if (!$item) {
     exit();
 }
 
+$_SESSION['active_schedule_id'] = $scheduleId;
+
 echo json_encode(["ok" => true]);
+?>

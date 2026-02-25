@@ -31,6 +31,13 @@
   margin-top: 24px;
 }
 
+.section-separator {
+  height: 1px;
+  background: #2b2b33;
+  margin: 24px 0 12px;
+  opacity: 0.8;
+}
+
 .section-title {
   font-size: 16px;
   font-weight: 600;

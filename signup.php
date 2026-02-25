@@ -4,6 +4,7 @@ ini_set('display_errors', 1);
 
 session_start();
 $error = '';
+require_once __DIR__ . '/backend/db.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST["username"];
@@ -15,48 +16,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (empty($error)) {
-        $conn = new mysqli("localhost", "root", "", "userdb");
+        $conn = db_connect();
 
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        }
-
-    // Cek apakah username sudah ada
-    $check = $conn->prepare("SELECT username FROM users WHERE username = ?");
-    $check->bind_param("s", $username);
-    $check->execute();
-    $check->store_result();
+        $check = $conn->prepare("SELECT username FROM `user` WHERE username = ?");
+        $check->bind_param("s", $username);
+        $check->execute();
+        $check->store_result();
 
         if ($check->num_rows > 0) {
-            // User sudah ada
             $_SESSION['message'] = "⚠️ Username sudah terdaftar. Silakan login.";
             header("Location: login/index.php");
             exit;
         }
 
-    // Jika belum ada, lanjut registrasi
-    $passwordHashed = password_hash($passwordPlain, PASSWORD_DEFAULT);
-    $stmt = $conn->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
-    $stmt->bind_param("ss", $username, $passwordHashed);
+        $passwordHashed = password_hash($passwordPlain, PASSWORD_DEFAULT);
+        $stmt = $conn->prepare("INSERT INTO `user` (username, password) VALUES (?, ?)");
+        $stmt->bind_param("ss", $username, $passwordHashed);
 
         if ($stmt->execute()) {
-        // Buat folder user
-        $userFolder = __DIR__ . "/uploads/$username";
-        if (!is_dir($userFolder)) {
-            mkdir($userFolder, 0777, true);
-        }
-
-        // Buat file tugas.csv default
-        $tugasCsvPath = $userFolder . "/tugas.csv";
-        $tugasAwal = [
-            ["Contoh Tugas", "pengajian", "2003-03-22"]
-        ];
-        $fp = fopen($tugasCsvPath, "w");
-        foreach ($tugasAwal as $baris) {
-            fputcsv($fp, $baris);
-        }
-        fclose($fp);
-
+            $userFolder = __DIR__ . "/uploads/$username";
+            if (!is_dir($userFolder)) {
+                mkdir($userFolder, 0777, true);
+            }
             $_SESSION['message'] = "✅ Registrasi berhasil. Silakan login.";
             header("Location: login/index.php");
             exit;

@@ -9,6 +9,7 @@ if (empty($_SESSION['username'])) {
 }
 
 require_once __DIR__ . '/../../backend/schedule_store.php';
+require_once __DIR__ . '/../../backend/db.php';
 
 $username = $_SESSION['username'];
 $daysOrder = ["Senin","Selasa","Rabu","Kamis","Jumat","Sabtu","Minggu"];
@@ -25,63 +26,33 @@ if (!$activeItem) {
     exit();
 }
 
-$paths = schedule_item_paths($username, $activeItem);
-$csvPath = $paths['csv'] ?? null;
-
-if (!$csvPath || !file_exists($csvPath)) {
-    echo "File jadwal tidak ditemukan.";
-    exit();
-}
-
-$header = [];
-$rows = [];
-
-if (($handle = fopen($csvPath, "r")) !== FALSE) {
-    $header = fgetcsv($handle, 1000, ",");
-    if ($header) {
-        $header = array_map('trim', $header);
-        $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
-    }
-
-    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-        if (count($data) < count($header)) {
-            $data = array_pad($data, count($header), '');
-        }
-        $rows[] = $data;
-    }
-    fclose($handle);
-}
-
-if (empty($header)) {
-    echo "Header CSV kosong atau tidak valid.";
-    exit();
-}
-
-$hariIndex = array_search('Hari', $header, true);
-if ($hariIndex === false) {
-    echo "Kolom 'Hari' tidak ditemukan di CSV.";
-    exit();
-}
-
+$header = ["No","Kode","Nama Matakuliah","SKS","Kelas/Rombel","Pengampu","Jenis","Ruang","Hari","Jam Mulai","Jam Selesai"];
+$rowsAssoc = [];
 $jadwal = [];
-foreach ($daysOrder as $day) {
-    $jadwal[$day] = [];
-}
+foreach ($daysOrder as $day) $jadwal[$day] = [];
 $jadwal[$extraDay] = [];
 
-$rowsAssoc = [];
-foreach ($rows as $index => $data) {
-    $rowAssoc = array_combine($header, $data);
-    if (!$rowAssoc) {
-        continue;
-    }
-
-    $dayValue = trim($rowAssoc['Hari'] ?? '');
+$dbRows = get_schedule_rows($username, $activeItem['id']);
+$idx = 0;
+foreach ($dbRows as $r) {
+    $rowAssoc = [
+        "No" => $r['no_col'] ?? '',
+        "Kode" => $r['kode'] ?? '',
+        "Nama Matakuliah" => $r['nama_matakuliah'] ?? '',
+        "SKS" => $r['sks'] ?? '',
+        "Kelas/Rombel" => $r['kelas'] ?? '',
+        "Pengampu" => $r['pengampu'] ?? '',
+        "Jenis" => $r['jenis'] ?? '',
+        "Ruang" => $r['ruang'] ?? '',
+        "Hari" => $r['hari'] ?? '',
+        "Jam Mulai" => $r['jam_mulai'] ?? '',
+        "Jam Selesai" => $r['jam_selesai'] ?? '',
+        "_index" => $idx++
+    ];
+    $dayValue = trim($rowAssoc['Hari']);
     if (!in_array($dayValue, $daysOrder, true)) {
         $dayValue = $extraDay;
     }
-
-    $rowAssoc['_index'] = $index;
     $rowsAssoc[] = $rowAssoc;
     $jadwal[$dayValue][] = $rowAssoc;
 }
@@ -107,7 +78,7 @@ function h($value) {
                 <p class="subtitle">Drag & drop untuk pindah hari. Tekan lama kartu untuk edit detail.</p>
                 <div class="active-schedule">Aktif: <?= h($activeItem['name'] ?? 'Jadwal') ?></div>
             </div>
-            <button id="saveBtn" class="save-btn" disabled>Simpan Jadwal</button>
+            <button id="saveBtn" class="save-btn">Simpan Jadwal</button>
         </div>
 
         <div id="status" class="status" aria-live="polite"></div>
@@ -480,8 +451,6 @@ function h($value) {
         });
 
         saveBtn.addEventListener("click", async () => {
-            if (!isDirty) return;
-
             saveBtn.disabled = true;
             setStatus("Menyimpan...");
 

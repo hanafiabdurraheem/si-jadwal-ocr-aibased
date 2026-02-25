@@ -3,6 +3,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 require_once __DIR__ . '/schedule_store.php';
+require_once __DIR__ . '/db.php';
 
 $username = $_SESSION['username'] ?? '';
 
@@ -22,10 +23,9 @@ $mapHari = [
 
 $hariIndonesia = $mapHari[$hariIni] ?? '';
 
-$csvPath = resolve_active_schedule_csv($username);
+$active = resolve_active_schedule_item($username);
 
-
-if (!$csvPath || !file_exists($csvPath)) {
+if (!$active) {
     echo '
     <form id="uploadForm" action="../backend/upload.php" method="POST" enctype="multipart/form-data">
         <input type="file" name="fileToUpload[]" id="fileToUpload" multiple accept=".jpg,.jpeg,.png" required style="display:none;" />
@@ -83,63 +83,34 @@ if (!$csvPath || !file_exists($csvPath)) {
     exit;
 }
 
+$rows = get_schedule_rows($username, $active['id']);
 
-
-$data = array_map('str_getcsv', file($csvPath));
-$header = array_shift($data);
-
-// Kolom yang ingin ditampilkan
-$kolomYangDitampilkan = ["Nama Matakuliah"];
-
-// Temukan index kolom
-$indexHari = array_search("Hari", $header);
-$indexJam = array_search("Jam Mulai", $header);
-
-if ($indexHari === false || $indexJam === false) {
-    echo "❌ Kolom 'Hari' atau 'Jam Mulai' tidak ditemukan.";
-    exit;
-}
-
-$indexKolom = [];
-foreach ($kolomYangDitampilkan as $kolom) {
-    $idx = array_search($kolom, $header);
-    if ($idx !== false) {
-        $indexKolom[$kolom] = $idx;
-    }
-}
-
-// Filter berdasarkan hari ini
-$filtered = array_filter($data, function ($row) use ($indexHari, $hariIndonesia) {
-    return isset($row[$indexHari]) && $row[$indexHari] === $hariIndonesia;
+$filtered = array_filter($rows, function ($row) use ($hariIndonesia) {
+    return isset($row['hari']) && $row['hari'] === $hariIndonesia;
 });
 
-// Urutkan berdasarkan "Jam Mulai"
-usort($filtered, function ($a, $b) use ($indexJam) {
-    $timeA = strtotime($a[$indexJam]);
-    $timeB = strtotime($b[$indexJam]);
+usort($filtered, function ($a, $b) {
+    $timeA = strtotime(str_replace('.', ':', $a['jam_mulai'] ?? ''));
+    $timeB = strtotime(str_replace('.', ':', $b['jam_mulai'] ?? ''));
     return $timeA <=> $timeB;
 });
 
 $now = strtotime(date('H:i'));
-
 $jadwalTerdekat = null;
 foreach ($filtered as $row) {
-    $jadwalTime = strtotime($row[$indexJam] ?? '');
+    $jadwalTime = strtotime(str_replace('.', ':', $row['jam_mulai'] ?? ''));
     if ($jadwalTime !== false && $jadwalTime >= $now) {
         $jadwalTerdekat = $row;
-        break; // Dapatkan hanya yang pertama yang belum lewat
+        break;
     }
 }
-
 
 echo "<h2></h2>";
 if (!$jadwalTerdekat) {
     echo "<p style='color:white;'>Tidak ada dalam waktu dekat</p>";
 } else {
     echo "<div class='jadwal-container'>";
-foreach ($indexKolom as $idx) {
-    echo "<div class='jadwal-value-only'>" . htmlspecialchars($jadwalTerdekat[$idx] ?? '-') . "</div>";
-}
-echo "</div>";
+    echo "<div class='jadwal-value-only'>" . htmlspecialchars($jadwalTerdekat['nama_matakuliah'] ?? '-') . "</div>";
+    echo "</div>";
 }
 ?>

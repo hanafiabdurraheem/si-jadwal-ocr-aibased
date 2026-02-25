@@ -9,20 +9,14 @@ if (empty($_SESSION['username'])) {
 }
 
 require_once __DIR__ . '/../backend/schedule_store.php';
+require_once __DIR__ . '/../backend/db.php';
 
 $messages = [];
 $errors = [];
+$successRedirect = false;
 $tab = $_GET['tab'] ?? 'jadwal';
 if (!in_array($tab, ['jadwal', 'akun'], true)) {
     $tab = 'jadwal';
-}
-
-function db_connect() {
-    $conn = new mysqli("localhost", "root", "", "userdb");
-    if ($conn->connect_error) {
-        return null;
-    }
-    return $conn;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -42,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$conn) {
                 $errors[] = 'Gagal koneksi ke database.';
             } else {
-                $check = $conn->prepare("SELECT username FROM users WHERE username = ?");
+                $check = $conn->prepare("SELECT username FROM user WHERE username = ?");
                 $check->bind_param("s", $newUsername);
                 $check->execute();
                 $check->store_result();
@@ -50,14 +44,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($check->num_rows > 0) {
                     $errors[] = 'Username baru sudah digunakan.';
                 } else {
-                    $stmt = $conn->prepare("SELECT password FROM users WHERE username = ?");
+                    $stmt = $conn->prepare("SELECT password FROM user WHERE username = ?");
                     $stmt->bind_param("s", $username);
                     $stmt->execute();
                     $stmt->bind_result($hashedPassword);
 
                     if ($stmt->fetch() && password_verify($currentPassword, $hashedPassword)) {
                         $stmt->close();
-                        $update = $conn->prepare("UPDATE users SET username = ? WHERE username = ?");
+                        $update = $conn->prepare("UPDATE user SET username = ? WHERE username = ?");
                         $update->bind_param("ss", $newUsername, $username);
                         if ($update->execute()) {
                             $oldDir = __DIR__ . "/../uploads/$username";
@@ -66,21 +60,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             if (is_dir($oldDir)) {
                                 if (is_dir($newDir)) {
                                     $errors[] = 'Folder user baru sudah ada. Perubahan dibatalkan.';
-                                    $rollback = $conn->prepare("UPDATE users SET username = ? WHERE username = ?");
+                                    $rollback = $conn->prepare("UPDATE user SET username = ? WHERE username = ?");
                                     $rollback->bind_param("ss", $username, $newUsername);
                                     $rollback->execute();
                                 } else if (!rename($oldDir, $newDir)) {
                                     $errors[] = 'Gagal memindahkan folder user. Perubahan dibatalkan.';
-                                    $rollback = $conn->prepare("UPDATE users SET username = ? WHERE username = ?");
+                                    $rollback = $conn->prepare("UPDATE user SET username = ? WHERE username = ?");
                                     $rollback->bind_param("ss", $username, $newUsername);
                                     $rollback->execute();
                                 } else {
                                     $_SESSION['username'] = $newUsername;
+                                    unset($_SESSION['active_schedule_id'], $_SESSION['active_schedule_csv'], $_SESSION['active_schedule_json']);
                                     $messages[] = 'Username berhasil diperbarui.';
+                                    $successRedirect = true;
                                 }
                             } else {
                                 $_SESSION['username'] = $newUsername;
+                                unset($_SESSION['active_schedule_id'], $_SESSION['active_schedule_csv'], $_SESSION['active_schedule_json']);
                                 $messages[] = 'Username berhasil diperbarui.';
+                                $successRedirect = true;
                             }
                         } else {
                             $errors[] = 'Gagal memperbarui username.';
@@ -111,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$conn) {
                 $errors[] = 'Gagal koneksi ke database.';
             } else {
-                $stmt = $conn->prepare("SELECT password FROM users WHERE username = ?");
+                $stmt = $conn->prepare("SELECT password FROM user WHERE username = ?");
                 $stmt->bind_param("s", $username);
                 $stmt->execute();
                 $stmt->bind_result($hashedPassword);
@@ -119,10 +117,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($stmt->fetch() && password_verify($currentPassword, $hashedPassword)) {
                     $stmt->close();
                     $newHashed = password_hash($newPassword, PASSWORD_DEFAULT);
-                    $update = $conn->prepare("UPDATE users SET password = ? WHERE username = ?");
+                    $update = $conn->prepare("UPDATE user SET password = ? WHERE username = ?");
                     $update->bind_param("ss", $newHashed, $username);
                     if ($update->execute()) {
                         $messages[] = 'Password berhasil diperbarui.';
+                        $successRedirect = true;
                     } else {
                         $errors[] = 'Gagal memperbarui password.';
                     }
@@ -137,7 +136,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+if ($successRedirect && empty($errors)) {
+    if (empty($_SESSION['username'])) {
+        header("Location: ../login/index.php");
+        exit();
+    }
+    header("Location: index.php?tab=akun&notice=success");
+    exit();
+}
+
 $username = $_SESSION['username'];
+
+if (isset($_GET['notice']) && $_GET['notice'] === 'success') {
+    $messages[] = 'Perubahan berhasil disimpan.';
+}
 $scheduleIndex = load_schedule_index($username);
 $scheduleItems = $scheduleIndex['items'] ?? [];
 
@@ -145,7 +157,7 @@ usort($scheduleItems, function ($a, $b) {
     return strcmp($b['created_at'] ?? '', $a['created_at'] ?? '');
 });
 
-$userDir = schedule_user_dir($username);
+$userDir = __DIR__ . '/../uploads/' . $username;
 ?>
 
 <!DOCTYPE html>
@@ -187,12 +199,9 @@ $userDir = schedule_user_dir($username);
               <?php foreach ($scheduleItems as $item): ?>
                 <?php
                   $itemId = $item['id'] ?? '';
-                  $paths = schedule_item_paths($username, $item);
-                  $csvUrl = !empty($item['csv']) ? ('../uploads/' . $username . '/' . ltrim($item['csv'], '/')) : null;
-                  $jsonUrl = !empty($item['json']) ? ('../uploads/' . $username . '/' . ltrim($item['json'], '/')) : null;
-                  $folder = !empty($paths['csv']) ? dirname($paths['csv']) : null;
                   $photoFiles = [];
-                  if ($itemId !== 'legacy' && $folder && is_dir($folder)) {
+                  $folder = ($itemId && $itemId !== 'legacy') ? ($userDir . '/' . $itemId) : null;
+                  if ($folder && is_dir($folder)) {
                       $photoFiles = glob($folder . '/original*');
                   }
                   $createdAt = $item['created_at'] ?? '';
@@ -205,12 +214,6 @@ $userDir = schedule_user_dir($username);
                       <div class="schedule-meta"><?php echo htmlspecialchars($createdLabel); ?></div>
                     </div>
                     <div class="schedule-actions">
-                      <?php if ($csvUrl): ?>
-                        <a class="btn-link" href="<?php echo htmlspecialchars($csvUrl); ?>" download>CSV</a>
-                      <?php endif; ?>
-                      <?php if ($jsonUrl): ?>
-                        <a class="btn-link" href="<?php echo htmlspecialchars($jsonUrl); ?>" download>JSON</a>
-                      <?php endif; ?>
                       <?php if ($itemId !== 'legacy'): ?>
                         <button class="btn-danger delete-schedule" type="button" data-id="<?php echo htmlspecialchars($itemId); ?>">Hapus</button>
                       <?php endif; ?>

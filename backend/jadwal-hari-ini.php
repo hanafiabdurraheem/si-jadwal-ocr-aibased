@@ -23,49 +23,37 @@ $mapHari = [
 
 $hariIndonesia = $mapHari[$hariIni] ?? '';
 
-// Path ke file aktif (JSON diutamakan)
-$jsonPath = resolve_active_schedule_json($username);
-$csvPath = resolve_active_schedule_csv($username);
-
-$rows = [];
-
-if ($jsonPath && file_exists($jsonPath)) {
-    $rows = json_decode(file_get_contents($jsonPath), true);
-    if (!is_array($rows)) {
-        $rows = [];
-    }
+$active = resolve_active_schedule_item($username);
+if (!$active) {
+    echo "⚠️ Jadwal aktif tidak ditemukan.";
+    exit;
 }
 
-if (empty($rows) && $csvPath && file_exists($csvPath)) {
-    $data = array_map('str_getcsv', file($csvPath));
-    $header = array_shift($data);
-    foreach ($data as $row) {
-        $combined = array_combine($header, $row);
-        if ($combined !== false) {
-            $rows[] = $combined;
-        }
-    }
-}
-
+$rows = get_schedule_rows($username, $active['id']);
 if (empty($rows)) {
-    echo "⚠️ File jadwal tidak ditemukan.";
+    echo "⚠️ Jadwal kosong.";
     exit;
 }
 
 // Tentukan kolom yang ingin ditampilkan
 // Kolom yang ingin ditampilkan
-$kolomYangDitampilkan = ["Nama Matakuliah", "Jam Mulai", "Jam Selesai", "Ruang"];
+$kolomYangDitampilkan = [
+    "Nama Matakuliah" => "nama_matakuliah",
+    "Jam Mulai" => "jam_mulai",
+    "Jam Selesai" => "jam_selesai",
+    "Ruang" => "ruang"
+];
 
 // Filter berdasarkan hari ini
 // Filter berdasarkan hari ini
 $filtered = array_filter($rows, function ($row) use ($hariIndonesia) {
-    return isset($row['Hari']) && trim($row['Hari']) === $hariIndonesia;
+    return isset($row['hari']) && trim($row['hari']) === $hariIndonesia;
 });
 
 // Urutkan berdasarkan "Jam Mulai" secara menaik
 usort($filtered, function ($a, $b) {
-    $timeA = strtotime(str_replace('.', ':', $a['Jam Mulai'] ?? ''));
-    $timeB = strtotime(str_replace('.', ':', $b['Jam Mulai'] ?? ''));
+    $timeA = strtotime(str_replace('.', ':', $a['jam_mulai'] ?? ''));
+    $timeB = strtotime(str_replace('.', ':', $b['jam_mulai'] ?? ''));
     return $timeA <=> $timeB;
 });
 
@@ -79,15 +67,15 @@ if (empty($filtered)) {
 } else {
     echo "<table border='1' cellpadding='6' cellspacing='0'>";
     echo "<tr>";
-    foreach ($kolomYangDitampilkan as $namaKolom) {
+    foreach ($kolomYangDitampilkan as $namaKolom => $key) {
         echo "<th>" . htmlspecialchars($namaKolom) . "</th>";
     }
     echo "</tr>";
 
     foreach ($filtered as $row) {
         echo "<tr>";
-        foreach ($kolomYangDitampilkan as $kolom) {
-            echo "<td>" . htmlspecialchars($row[$kolom] ?? '-') . "</td>";
+        foreach ($kolomYangDitampilkan as $key) {
+            echo "<td>" . htmlspecialchars($row[$key] ?? '-') . "</td>";
         }
         echo "</tr>";
     }

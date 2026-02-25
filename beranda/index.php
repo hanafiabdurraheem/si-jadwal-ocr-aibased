@@ -92,12 +92,14 @@ $username = $_SESSION['username'];
         top:339px; 
         left:50%; 
         transform:translate(-50%, -50%); 
-        background:white; 
+        background:transparent; 
         padding:0px; 
+        width:90%;
         max-width:383px; 
-        max-height:100%;
+        height:auto;
+        max-height:none;
         border-radius: 12px;
-        overflow:auto; 
+        overflow:visible; 
         z-index:1000;">
         <div id="modalContent">Memuat...
         </div>

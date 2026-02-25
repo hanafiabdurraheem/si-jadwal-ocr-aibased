@@ -2,6 +2,7 @@
 session_start();
 set_time_limit(0);
 require_once __DIR__ . '/schedule_store.php';
+require_once __DIR__ . '/db.php';
 
 $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_GET['ajax']) && $_GET['ajax'] === '1'));
 
@@ -188,38 +189,13 @@ foreach ($files as $index => $file) {
             $mergedRows[] = $row;
         }
     } else {
-        $jsonPath = $uploadPath . '/result.json';
-        file_put_contents($jsonPath, json_encode($resultData, JSON_PRETTY_PRINT));
-
-        $csvPath = $uploadPath . '/result.csv';
-        $fp = fopen($csvPath, 'w');
-
-        fputcsv($fp, array_keys($resultData[0]));
-        foreach ($resultData as $row) {
-            fputcsv($fp, $row);
-        }
-
-        fclose($fp);
-
-        $relativeCsv = basename($uploadPath) . '/result.csv';
-        $relativeJson = basename($uploadPath) . '/result.json';
-        $createdAt = date('Y-m-d H:i:s');
         $displayName = pathinfo($fileName, PATHINFO_FILENAME);
         if ($displayName === '') {
             $displayName = 'Jadwal ' . basename($uploadPath);
         }
-
-        add_schedule_item($username, [
-            'id' => basename($uploadPath),
-            'name' => $displayName,
-            'csv' => $relativeCsv,
-            'json' => $relativeJson,
-            'created_at' => $createdAt,
-            'updated_at' => $createdAt,
-            'source' => $fileName
-        ]);
-
-        $lastScheduleId = basename($uploadPath);
+        $setId = basename($uploadPath);
+        add_schedule_set($username, $setId, $displayName, $resultData, true);
+        $lastScheduleId = $setId;
     }
 
     $processedCount++;
@@ -227,9 +203,6 @@ foreach ($files as $index => $file) {
 }
 
 if ($batchMode && $processedCount > 0) {
-    $jsonPath = $batchUploadPath . '/result.json';
-    $csvPath = $batchUploadPath . '/result.csv';
-
     $normalizedRows = [];
     foreach ($mergedRows as $row) {
         $clean = [];
@@ -239,48 +212,22 @@ if ($batchMode && $processedCount > 0) {
         $normalizedRows[] = $clean;
     }
 
-    file_put_contents($jsonPath, json_encode($normalizedRows, JSON_PRETTY_PRINT));
-
-    $fp = fopen($csvPath, 'w');
-    fputcsv($fp, $mergedColumns);
-    foreach ($normalizedRows as $row) {
-        $line = [];
-        foreach ($mergedColumns as $col) {
-            $line[] = $row[$col] ?? '';
-        }
-        fputcsv($fp, $line);
-    }
-    fclose($fp);
-
-    $relativeCsv = basename($batchUploadPath) . '/result.csv';
-    $relativeJson = basename($batchUploadPath) . '/result.json';
-    $createdAt = date('Y-m-d H:i:s');
     $firstName = pathinfo($files[0]['name'] ?? '', PATHINFO_FILENAME);
     $displayName = $firstName !== '' ? $firstName : ('Batch ' . date('Ymd_His'));
     if ($processedCount > 1) {
         $displayName .= ' + ' . ($processedCount - 1) . ' foto';
     }
 
-    $sourceList = array_map(function ($f) {
-        return $f['name'] ?? '';
-    }, $files);
-
-    add_schedule_item($username, [
-        'id' => basename($batchUploadPath),
-        'name' => $displayName,
-        'csv' => $relativeCsv,
-        'json' => $relativeJson,
-        'created_at' => $createdAt,
-        'updated_at' => $createdAt,
-        'source' => implode(', ', array_filter($sourceList))
-    ]);
-
-    $lastScheduleId = basename($batchUploadPath);
+    $setId = basename($batchUploadPath);
+    add_schedule_set($username, $setId, $displayName, $normalizedRows, true);
+    $lastScheduleId = $setId;
 }
 
 if (!$lastScheduleId) {
     upload_error("Tidak ada file yang berhasil diproses.", $isAjax);
 }
+
+$_SESSION['active_schedule_id'] = $lastScheduleId;
 
 if ($isAjax) {
     header('Content-Type: application/json');
