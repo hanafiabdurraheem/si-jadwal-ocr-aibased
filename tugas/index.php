@@ -54,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <link rel="stylesheet" href="styleguide.css" />
     <link rel="stylesheet" href="style.css?v=2" />
   </head>
-  <body>
+  <body data-chat-context="tugas">
     <div class="daftar-tugas">
       <div class="div">
         <div class="text-wrapper">Tambah Tugas</div>
@@ -103,5 +103,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </a>
       </div>
     </div>
+    <?php include __DIR__ . '/../chat/widget.php'; ?>
   </body>
 </html>

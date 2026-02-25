@@ -83,7 +83,7 @@ usort($tasksArchive, $sortFn);
     <link rel="stylesheet" href="styleguide.css" />
     <link rel="stylesheet" href="style.css?v=<?= time() ?>" />
   </head>
-  <body>
+  <body data-chat-context="pengingat">
     <div class="kelas">
       <div class="container">
         <div class="header">
@@ -222,6 +222,7 @@ usort($tasksArchive, $sortFn);
       </div>
     </div>
     <?php include '../nav.php'; ?>
+    <?php include __DIR__ . '/../chat/widget.php'; ?>
 
     <script>
       document.querySelectorAll('.task-header').forEach(header => {

@@ -25,7 +25,7 @@ $username = $_SESSION['username'];
   </head>
 
 
-  <body>
+  <body data-chat-context="beranda">
     <div class="jadwal-kuliah">
       <div class="div">
       <span class="text-wrapper">Hey, <?php echo htmlspecialchars($username); ?></span>
@@ -151,5 +151,6 @@ $username = $_SESSION['username'];
       </div>
       <?php include '../nav.php'; ?>
     </div>
+    <?php include __DIR__ . '/../chat/widget.php'; ?>
   </body>
 </html>
