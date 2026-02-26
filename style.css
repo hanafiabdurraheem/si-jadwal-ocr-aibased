@@ -8,7 +8,9 @@
 
 .login .div {
   background-color: #1d1d1d;
-  width: 430px;
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
   height: 100vh;
   position: relative;
 }
@@ -151,6 +153,43 @@
   line-height: normal;
 
 
+}
+
+@media (max-width: 430px) {
+  .login .overlap-group {
+    width: calc(100% - 76px);
+    left: 38px;
+  }
+
+  .login .kotak-utama {
+    width: 100%;
+  }
+
+  .login .kotak-usernam,
+  .login .kotak-pass {
+    width: calc(100% - 28px);
+    left: 14px;
+  }
+
+  .login .user {
+    width: calc(100% - 72px);
+    left: 36px;
+  }
+
+  .login .password {
+    width: calc(100% - 62px);
+    left: 31px;
+  }
+
+  .login .button-login,
+  .login .text-wrapper-3 {
+    left: auto;
+    right: 14px;
+  }
+
+  .login .text-wrapper-4 {
+    max-width: calc(100% - 76px);
+  }
 }
 
 .login .text-wrapper-5 {

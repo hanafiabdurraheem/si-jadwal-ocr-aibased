@@ -214,6 +214,9 @@ $userDir = __DIR__ . '/../uploads/' . $username;
                       <div class="schedule-meta"><?php echo htmlspecialchars($createdLabel); ?></div>
                     </div>
                     <div class="schedule-actions">
+                      <?php if (!empty($itemId)): ?>
+                        <a class="btn-link" href="../backend/export_schedule.php?schedule_id=<?php echo urlencode($itemId); ?>">Download</a>
+                      <?php endif; ?>
                       <?php if ($itemId !== 'legacy'): ?>
                         <button class="btn-danger delete-schedule" type="button" data-id="<?php echo htmlspecialchars($itemId); ?>">Hapus</button>
                       <?php endif; ?>

@@ -78,7 +78,10 @@ function h($value) {
                 <p class="subtitle">Drag & drop untuk pindah hari. Tekan lama kartu untuk edit detail.</p>
                 <div class="active-schedule">Aktif: <?= h($activeItem['name'] ?? 'Jadwal') ?></div>
             </div>
-            <button id="saveBtn" class="save-btn">Simpan Jadwal</button>
+            <div class="header-actions">
+                <button id="addCourseBtn" class="add-btn" type="button">Tambah Matakuliah</button>
+                <button id="saveBtn" class="save-btn">Simpan Jadwal</button>
+            </div>
         </div>
 
         <div id="status" class="status" aria-live="polite"></div>
@@ -99,6 +102,11 @@ function h($value) {
                     </div>
                 </div>
             <?php endforeach; ?>
+        </div>
+
+        <div id="deleteZone" class="delete-zone" aria-hidden="true">
+            <div class="delete-icon">X</div>
+            <div class="delete-text">Seret ke sini untuk hapus</div>
         </div>
     </div>
 
@@ -127,6 +135,8 @@ function h($value) {
 
         const statusEl = document.getElementById("status");
         const saveBtn = document.getElementById("saveBtn");
+        const addCourseBtn = document.getElementById("addCourseBtn");
+        const deleteZone = document.getElementById("deleteZone");
         const columns = document.querySelectorAll(".day-column");
         const cards = document.querySelectorAll(".card");
 
@@ -138,6 +148,10 @@ function h($value) {
         let longPressTriggered = false;
         let touchStart = null;
         let currentTouchColumn = null;
+        let dragGhost = null;
+        let dragOffset = null;
+        let isTouchDragging = false;
+        let nextRowIndex = Math.max(-1, ...scheduleRows.map(row => row._index)) + 1;
 
         function setStatus(message, isError = false) {
             statusEl.textContent = message;
@@ -148,6 +162,46 @@ function h($value) {
             isDirty = true;
             saveBtn.disabled = false;
             setStatus("Perubahan belum disimpan.");
+        }
+
+        function showDeleteZone() {
+            if (!deleteZone) return;
+            deleteZone.classList.add("active");
+            deleteZone.setAttribute("aria-hidden", "false");
+        }
+
+        function hideDeleteZone() {
+            if (!deleteZone) return;
+            deleteZone.classList.remove("active", "hover");
+            deleteZone.setAttribute("aria-hidden", "true");
+        }
+
+        function setDeleteHover(isHover) {
+            if (!deleteZone) return;
+            deleteZone.classList.toggle("hover", isHover);
+        }
+
+        function isPointInDeleteZone(x, y) {
+            if (!deleteZone) return false;
+            const rect = deleteZone.getBoundingClientRect();
+            return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+        }
+
+        function removeDragGhost() {
+            if (dragGhost) {
+                dragGhost.remove();
+                dragGhost = null;
+            }
+        }
+
+        function deleteCard(card) {
+            const rowIndex = Number(card.dataset.rowIndex);
+            rowsByIndex.delete(rowIndex);
+            const rowPos = scheduleRows.findIndex(row => row._index === rowIndex);
+            if (rowPos >= 0) scheduleRows.splice(rowPos, 1);
+            card.remove();
+            markDirty();
+            updateConflicts();
         }
 
         function updateCardContent(card, row) {
@@ -245,11 +299,39 @@ function h($value) {
             columns.forEach(col => col.classList.remove("drag-over"));
         }
 
-        cards.forEach(card => {
+        function buildCardElement(row, day) {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.draggable = true;
+            card.dataset.rowIndex = row._index;
+            card.dataset.day = day;
+
+            const conflictBadge = document.createElement("div");
+            conflictBadge.className = "conflict-badge";
+            conflictBadge.textContent = "Konflik";
+
+            const title = document.createElement("div");
+            title.className = "card-title";
+            title.textContent = row["Nama Matakuliah"] || "Tanpa Nama";
+
+            const metaTime = document.createElement("div");
+            metaTime.className = "card-meta";
+            metaTime.textContent = `${row["Jam Mulai"] || ""} - ${row["Jam Selesai"] || ""}`.trim();
+
+            const metaRoom = document.createElement("div");
+            metaRoom.className = "card-meta";
+            metaRoom.textContent = row["Ruang"] || "";
+
+            card.append(conflictBadge, title, metaTime, metaRoom);
+            return card;
+        }
+
+        function bindCardEvents(card) {
             card.addEventListener("dragstart", (e) => {
                 draggingCard = card;
                 originColumn = card.closest(".day-column");
                 card.classList.add("dragging");
+                showDeleteZone();
                 e.dataTransfer.setData("text/plain", card.dataset.rowIndex);
             });
 
@@ -257,13 +339,17 @@ function h($value) {
                 card.classList.remove("dragging");
                 draggingCard = null;
                 originColumn = null;
+                hideDeleteZone();
             });
 
             card.addEventListener("dblclick", () => openEditModal(card));
 
             card.addEventListener("touchstart", (e) => {
                 longPressTriggered = false;
+                isTouchDragging = false;
                 touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                const rect = card.getBoundingClientRect();
+                dragOffset = { x: touchStart.x - rect.left, y: touchStart.y - rect.top };
                 longPressTimer = setTimeout(() => {
                     longPressTriggered = true;
                     openEditModal(card);
@@ -272,8 +358,9 @@ function h($value) {
 
             card.addEventListener("touchmove", (e) => {
                 if (!touchStart) return;
-                const dx = Math.abs(e.touches[0].clientX - touchStart.x);
-                const dy = Math.abs(e.touches[0].clientY - touchStart.y);
+                const touch = e.touches[0];
+                const dx = Math.abs(touch.clientX - touchStart.x);
+                const dy = Math.abs(touch.clientY - touchStart.y);
                 if ((dx > 8 || dy > 8) && longPressTimer) {
                     clearTimeout(longPressTimer);
                     longPressTimer = null;
@@ -282,8 +369,34 @@ function h($value) {
                 if (longPressTriggered) return;
 
                 e.preventDefault();
-                draggingCard = card;
-                const column = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY)?.closest(".day-column");
+                if (!isTouchDragging) {
+                    isTouchDragging = true;
+                    draggingCard = card;
+                    originColumn = card.closest(".day-column");
+                    showDeleteZone();
+                    card.classList.add("dragging-touch");
+
+                    const rect = card.getBoundingClientRect();
+                    dragGhost = card.cloneNode(true);
+                    dragGhost.classList.add("drag-ghost");
+                    dragGhost.style.width = `${rect.width}px`;
+                    dragGhost.style.height = `${rect.height}px`;
+                    document.body.appendChild(dragGhost);
+                }
+
+                if (dragGhost && dragOffset) {
+                    dragGhost.style.transform = `translate(${touch.clientX - dragOffset.x}px, ${touch.clientY - dragOffset.y}px)`;
+                }
+
+                const overDelete = isPointInDeleteZone(touch.clientX, touch.clientY);
+                setDeleteHover(overDelete);
+                if (overDelete) {
+                    clearColumnHighlight();
+                    currentTouchColumn = null;
+                    return;
+                }
+
+                const column = document.elementFromPoint(touch.clientX, touch.clientY)?.closest(".day-column");
                 if (column && column !== currentTouchColumn) {
                     clearColumnHighlight();
                     column.classList.add("drag-over");
@@ -291,22 +404,32 @@ function h($value) {
                 }
             }, { passive: false });
 
-            card.addEventListener("touchend", () => {
+            card.addEventListener("touchend", (e) => {
                 if (longPressTimer) {
                     clearTimeout(longPressTimer);
                     longPressTimer = null;
                 }
 
-                if (currentTouchColumn && draggingCard && !longPressTriggered) {
+                const touch = e.changedTouches[0];
+                const dropOnDelete = isTouchDragging && touch && isPointInDeleteZone(touch.clientX, touch.clientY);
+
+                if (dropOnDelete && draggingCard) {
+                    deleteCard(draggingCard);
+                } else if (currentTouchColumn && draggingCard && !longPressTriggered) {
                     const newDay = currentTouchColumn.dataset.day;
                     if (newDay) {
                         moveCardToDay(draggingCard, newDay);
                     }
                 }
+
                 clearColumnHighlight();
+                card.classList.remove("dragging-touch");
+                removeDragGhost();
+                hideDeleteZone();
                 draggingCard = null;
                 currentTouchColumn = null;
                 touchStart = null;
+                isTouchDragging = false;
             });
 
             card.addEventListener("touchcancel", () => {
@@ -315,11 +438,17 @@ function h($value) {
                     longPressTimer = null;
                 }
                 clearColumnHighlight();
+                card.classList.remove("dragging-touch");
+                removeDragGhost();
+                hideDeleteZone();
                 draggingCard = null;
                 currentTouchColumn = null;
                 touchStart = null;
+                isTouchDragging = false;
             });
-        });
+        }
+
+        cards.forEach(card => bindCardEvents(card));
 
         columns.forEach(column => {
             column.addEventListener("dragover", (e) => {
@@ -345,12 +474,60 @@ function h($value) {
             });
         });
 
+        if (deleteZone) {
+            deleteZone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                setDeleteHover(true);
+            });
+
+            deleteZone.addEventListener("dragleave", () => {
+                setDeleteHover(false);
+            });
+
+            deleteZone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                setDeleteHover(false);
+                if (draggingCard) {
+                    deleteCard(draggingCard);
+                    draggingCard = null;
+                }
+                hideDeleteZone();
+            });
+        }
+
         const modal = document.getElementById("editModal");
         const closeModalBtn = document.getElementById("closeModal");
         const cancelEditBtn = document.getElementById("cancelEdit");
         const editForm = document.getElementById("editForm");
         const formFields = document.getElementById("formFields");
         let activeEditIndex = null;
+
+        function createEmptyRow() {
+            const row = { _index: nextRowIndex++ };
+            scheduleHeader.forEach(col => {
+                row[col] = "";
+            });
+            scheduleRows.push(row);
+            rowsByIndex.set(row._index, row);
+            return row;
+        }
+
+        function addNewCourse() {
+            const row = createEmptyRow();
+            const targetColumn = document.querySelector(`.day-column[data-day="${extraDay}"] .cards`);
+            const card = buildCardElement(row, extraDay);
+            if (targetColumn) {
+                targetColumn.appendChild(card);
+            }
+            bindCardEvents(card);
+            markDirty();
+            updateConflicts();
+            openEditModal(card);
+        }
+
+        if (addCourseBtn) {
+            addCourseBtn.addEventListener("click", addNewCourse);
+        }
 
         const fieldInputs = {};
         scheduleHeader.forEach(col => {

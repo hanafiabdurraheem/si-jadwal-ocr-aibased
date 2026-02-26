@@ -63,7 +63,7 @@
 
 .jadwal-kuliah .kotak-upcoming {
   position: absolute;
-  width: 381px;
+  width: 100%;
   height: 100px;
   top: 0;
   left: 0;
@@ -731,4 +731,30 @@ h2 {
 .toast-notice.show {
   opacity: 1;
   transform: translateY(0);
+}
+
+.jadwal-kuliah .div {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+}
+
+@media (max-width: 430px) {
+  .jadwal-kuliah .overlap,
+  .jadwal-kuliah .group-2,
+  .tabel-di-tengah-rata-kiri {
+    width: calc(100% - 48px);
+    left: 24px;
+  }
+
+  .jadwal-kuliah .frame {
+    left: auto;
+    right: 24px;
+  }
+
+  .jadwal-kuliah .text-wrapper-6,
+  .jadwal-kuliah .text-wrapper-8 {
+    left: auto;
+    right: 24px;
+  }
 }
