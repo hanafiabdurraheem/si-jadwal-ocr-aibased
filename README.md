@@ -1,1 +1,1 @@
-# si-jadwal-aibasedocr
+# si-jadwal-ai-based-ocr
