@@ -1,0 +1,236 @@
+:root {
+  --bg: #0f1224;
+  --bg-soft: #141a33;
+  --card: #1a2243;
+  --card-strong: #1f294f;
+  --accent: #f7b54a;
+  --accent-2: #5eead4;
+  --text: #f4f6ff;
+  --muted: #b7c0e0;
+  --danger: #ff5b6e;
+  --success: #36d399;
+  --border: rgba(255, 255, 255, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Plus Jakarta Sans", "Poppins", "Segoe UI", Arial, sans-serif;
+  background: radial-gradient(1200px 500px at 10% -10%, rgba(94, 234, 212, 0.2), transparent 50%),
+    radial-gradient(1000px 400px at 90% 0%, rgba(247, 181, 74, 0.25), transparent 50%),
+    var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(31, 41, 79, 0.9), rgba(20, 26, 51, 0.95));
+  border: 1px solid var(--border);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+}
+
+.hero-content h1 {
+  font-size: clamp(2rem, 2.5vw + 1rem, 3rem);
+  margin-bottom: 8px;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  color: var(--accent-2);
+  margin-bottom: 8px;
+}
+
+.lead {
+  color: var(--muted);
+  max-width: 520px;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.chip {
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 28px 0;
+}
+
+.stat-card {
+  background: linear-gradient(145deg, rgba(26, 34, 67, 0.9), rgba(20, 26, 51, 0.9));
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  padding: 20px;
+  min-height: 110px;
+}
+
+.stat-card h2 {
+  font-size: 2rem;
+  margin: 8px 0;
+}
+
+.stat-card span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.card {
+  margin-top: 26px;
+  background: var(--card);
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  padding: 20px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.2);
+}
+
+.card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.card-head p {
+  color: var(--muted);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.data-table th,
+.data-table td {
+  text-align: left;
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+.data-table th {
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.7rem;
+}
+
+.data-table tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.empty {
+  text-align: center;
+  padding: 18px;
+  color: var(--muted);
+}
+
+.btn {
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+}
+
+.btn.danger {
+  background: rgba(255, 91, 110, 0.2);
+  border: 1px solid rgba(255, 91, 110, 0.4);
+  color: #ffd7dc;
+}
+
+.badge {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+}
+
+.badge.active {
+  background: rgba(94, 234, 212, 0.18);
+  color: #b7fff2;
+}
+
+.badge.status-belum-selesai {
+  background: rgba(247, 181, 74, 0.2);
+  color: #ffe5bf;
+}
+
+.badge.status-selesai {
+  background: rgba(54, 211, 153, 0.2);
+  color: #caffea;
+}
+
+.badge.status-arsip {
+  background: rgba(99, 102, 241, 0.2);
+  color: #d7d9ff;
+}
+
+.flash {
+  margin-top: 20px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.flash.success {
+  border-color: rgba(54, 211, 153, 0.4);
+  color: #caffea;
+}
+
+.flash.error {
+  border-color: rgba(255, 91, 110, 0.4);
+  color: #ffd7dc;
+}
+
+@media (max-width: 720px) {
+  .hero {
+    padding: 22px;
+  }
+
+  .data-table {
+    min-width: 600px;
+  }
+}

@@ -245,6 +245,14 @@ $userDir = __DIR__ . '/../uploads/' . $username;
         <section class="section">
           <div class="section-title">Akun</div>
           <div class="account-grid">
+            <?php if ($username === 'hanafi'): ?>
+            <div class="account-card">
+              <div class="card-title">Admin</div>
+              <p style="font-size: 12px; color: #b0b0b8;">Akses dashboard admin untuk melihat data user, jadwal, dan tugas.</p>
+              <a class="btn-primary" href="../admin/index.php">Login sebagai admin</a>
+            </div>
+            <?php endif; ?>
+
             <form class="account-card" method="POST">
               <input type="hidden" name="action" value="update_username">
               <div class="card-title">Ganti Username</div>
