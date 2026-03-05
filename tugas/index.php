@@ -2,9 +2,8 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../backend/session.php';
+app_start_session();
 
 // Check if user is logged in
 if (empty($_SESSION['username'])) {
@@ -15,6 +14,15 @@ if (empty($_SESSION['username'])) {
 $username = $_SESSION['username'];
 require_once __DIR__ . '/../backend/schedule_store.php';
 require_once __DIR__ . '/../backend/task_store.php';
+require_once __DIR__ . '/../backend/class_store.php';
+
+$classes = class_list_for_user($username);
+$adminClasses = [];
+foreach ($classes as $classItem) {
+    if (($classItem['role'] ?? '') === 'admin') {
+        $adminClasses[] = $classItem;
+    }
+}
 
 $scheduleActive = resolve_active_schedule_item($username);
 $rowsMatkul = $scheduleActive ? get_schedule_rows($username, $scheduleActive['id']) : [];
@@ -29,17 +37,34 @@ sort($mataKuliahList);
 
 // Menyimpan data ke DB jika form disubmit
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $taskScope = $_POST['task_scope'] ?? 'pribadi';
     $mataKuliah = $_POST['mata_kuliah'] ?? '';
     $jenisKegiatan = $_POST['jenis_kegiatan'] ?? '';
     $deadline = $_POST['status_tugas'] ?? '';
+    $kelasId = (int)($_POST['kelas_id'] ?? 0);
 
     if ($mataKuliah && $jenisKegiatan && $deadline) {
+        if ($taskScope === 'kelas') {
+            if ($kelasId <= 0 || !class_is_admin($username, $kelasId)) {
+                echo "⚠️ Anda bukan admin kelas yang dipilih.";
+                exit;
+            }
+            $result = class_add_task($kelasId, $username, $mataKuliah, $jenisKegiatan, $deadline, null);
+            if (!empty($result['ok'])) {
+                header("Location: ../kelas/index.php?notice=tugas_shared");
+                exit;
+            }
+            $message = $result['message'] ?? 'Gagal menambahkan tugas kelas.';
+            echo "⚠️ " . htmlspecialchars($message);
+            exit;
+        }
+
         task_add($username, $mataKuliah, $jenisKegiatan, $deadline, null);
         header("Location: ../kelas/index.php?notice=task_added");
         exit;
-    } else {
-        echo "⚠️ Semua field harus diisi.";
     }
+
+    echo "⚠️ Semua field harus diisi.";
 }
 ?>
 
@@ -50,8 +75,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta charset="utf-8" />
+    <link rel="manifest" href="/si-jadwal/manifest.webmanifest" />
+    <meta name="theme-color" content="#121212" />
     <link rel="stylesheet" href="global.css" />
     <link rel="stylesheet" href="styleguide.css" />
+    <link rel="stylesheet" href="/si-jadwal/backend/theme.php?v=<?= time() ?>" />
     <link rel="stylesheet" href="style.css?v=2" />
   </head>
   <body data-chat-context="tugas">
@@ -59,6 +87,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       <div class="div">
         <div class="text-wrapper">Tambah Tugas</div>
         <img class="line" src="../img/line.png" />
+        <?php if (!empty($adminClasses)): ?>
+          <div class="text-wrapper-scope">Jenis Tugas</div>
+          <div class="overlap-scope">
+            <select class="dropdown" name="task_scope" id="taskScopeSelect" required>
+              <option value="pribadi">Tugas Pribadi</option>
+              <option value="kelas">Tugas Kelas</option>
+            </select>
+          </div>
+
+          <div class="text-wrapper-class" id="kelasLabel" style="display:none;">Kelas</div>
+          <div class="overlap-class" id="kelasSelectWrap" style="display:none;">
+            <select class="dropdown" name="kelas_id">
+              <option value="">Pilih Kelas</option>
+              <?php foreach ($adminClasses as $classItem): ?>
+                <option value="<?= (int)($classItem['id'] ?? 0) ?>">
+                  <?= htmlspecialchars($classItem['nama'] ?? 'Kelas') ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+        <?php else: ?>
+          <input type="hidden" name="task_scope" value="pribadi">
+        <?php endif; ?>
+
         <div class="text-wrapper-2">Mata Kuliah</div>
         <div class="text-wrapper-3">Jenis Tugas</div>
         <div class="text-wrapper-4">Deadline</div>
@@ -104,5 +156,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       </div>
     </div>
     <?php include __DIR__ . '/../chat/widget.php'; ?>
+    <script>
+      const scopeSelect = document.getElementById('taskScopeSelect');
+      const kelasWrap = document.getElementById('kelasSelectWrap');
+      const kelasLabel = document.getElementById('kelasLabel');
+      if (scopeSelect && kelasWrap) {
+        const syncScope = () => {
+          const isKelas = scopeSelect.value === 'kelas';
+          kelasWrap.style.display = isKelas ? 'block' : 'none';
+          if (kelasLabel) {
+            kelasLabel.style.display = isKelas ? 'block' : 'none';
+          }
+          const selectEl = kelasWrap.querySelector('select');
+          if (selectEl) {
+            selectEl.required = isKelas;
+          }
+        };
+        scopeSelect.addEventListener('change', syncScope);
+        syncScope();
+      }
+    </script>
   </body>
 </html>

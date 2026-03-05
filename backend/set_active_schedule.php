@@ -1,7 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/session.php';
+app_start_session();
 
 header('Content-Type: application/json');
 
@@ -11,6 +10,7 @@ if (empty($_SESSION['username'])) {
 }
 
 require_once __DIR__ . '/schedule_store.php';
+require_once __DIR__ . '/class_store.php';
 
 $input = json_decode(file_get_contents("php://input"), true);
 if (!$input || empty($input['scheduleId'])) {
@@ -28,6 +28,11 @@ if (!$item) {
 }
 
 $_SESSION['active_schedule_id'] = $scheduleId;
+
+$classInfo = class_find_by_schedule_id($scheduleId);
+if ($classInfo && !empty($classInfo['id'])) {
+    class_sync_tasks_for_member($username, (int)$classInfo['id']);
+}
 
 echo json_encode(["ok" => true]);
 ?>

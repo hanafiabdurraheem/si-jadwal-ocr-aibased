@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Offline - Si Jadwal</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f0f12;
+      --card: #1a1b20;
+      --text: #f4f4f5;
+      --muted: #b7b8c0;
+      --accent: #6cd3a8;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at top, #1f2129 0%, var(--bg) 55%);
+      font-family: "Poppins", "Segoe UI", sans-serif;
+      color: var(--text);
+      padding: 24px;
+      box-sizing: border-box;
+    }
+    .card {
+      width: min(480px, 100%);
+      background: var(--card);
+      border-radius: 18px;
+      padding: 20px;
+      border: 1px solid #2a2b33;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+    }
+    p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+    ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    strong {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Anda sedang offline</h1>
+    <p>Mode offline terbatas aktif. Anda tetap bisa membuka jadwal yang pernah dimuat dan mengubah jadwal yang sudah ada.</p>
+    <ul>
+      <li><strong>Bisa:</strong> lihat jadwal, ubah jadwal, simpan perubahan ke antrean sinkronisasi.</li>
+      <li><strong>Tidak bisa:</strong> upload jadwal baru dan proses OCR.</li>
+      <li>Perubahan akan otomatis dikirim ke server saat internet kembali.</li>
+    </ul>
+  </main>
+</body>
+</html>

@@ -1,10 +1,10 @@
 <?php
 require_once __DIR__ . '/db.php';
 
-function task_add($username, $mataKuliah, $jenis, $tanggal, $jam = null) {
+function task_add($username, $mataKuliah, $jenis, $tanggal, $jam = null, $sourceKelasId = null, $sourceKelasTugasId = null) {
     $conn = db_connect();
-    $stmt = $conn->prepare("INSERT INTO task (username, mata_kuliah, jenis, tanggal, jam, status) VALUES (?,?,?,?,?, 'Belum selesai')");
-    $stmt->bind_param('sssss', $username, $mataKuliah, $jenis, $tanggal, $jam);
+    $stmt = $conn->prepare("INSERT INTO task (username, mata_kuliah, jenis, tanggal, jam, status, source_kelas_id, source_kelas_tugas_id) VALUES (?,?,?,?,?, 'Belum selesai', ?, ?)");
+    $stmt->bind_param('sssssii', $username, $mataKuliah, $jenis, $tanggal, $jam, $sourceKelasId, $sourceKelasTugasId);
     $stmt->execute();
     $stmt->close();
     $conn->close();

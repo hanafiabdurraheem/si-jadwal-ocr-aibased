@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once __DIR__ . '/session.php';
+app_start_session();
 set_time_limit(0);
 require_once __DIR__ . '/schedule_store.php';
 require_once __DIR__ . '/db.php';

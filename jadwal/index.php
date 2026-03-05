@@ -1,7 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../backend/session.php';
+app_start_session();
 
 // Cek login
 if (empty($_SESSION['username'])) {
@@ -26,8 +25,11 @@ usort($scheduleItems, function ($a, $b) {
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta charset="utf-8" />
+  <link rel="manifest" href="/si-jadwal/manifest.webmanifest" />
+  <meta name="theme-color" content="#121212" />
   <link rel="stylesheet" href="global.css" />
   <link rel="stylesheet" href="styleguide.css" />
+  <link rel="stylesheet" href="/si-jadwal/backend/theme.php?v=<?= time() ?>" />
   <link rel="stylesheet" href="style.css?v=<?= time() ?>" />
 </head>
 
@@ -97,6 +99,23 @@ usort($scheduleItems, function ($a, $b) {
     const uploadForm = document.getElementById("uploadForm");
     const fabUpload = document.getElementById("fabUpload");
     const uploadOverlay = document.getElementById("uploadOverlay");
+    const scheduleIndexSeed = <?=
+      json_encode([
+        'activeId' => $activeScheduleId,
+        'items' => array_map(function ($item) {
+            return [
+                'id' => $item['id'] ?? '',
+                'name' => $item['name'] ?? 'Jadwal',
+                'created_at' => $item['created_at'] ?? '',
+                'updated_at' => $item['updated_at'] ?? ''
+            ];
+        }, $scheduleItems)
+      ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    ?>;
+
+    if (window.SiJadwalPWA) {
+        window.SiJadwalPWA.primeScheduleIndex(scheduleIndexSeed).catch(() => null);
+    }
 
     function showUploadOverlay() {
         uploadOverlay.classList.add("show");
@@ -108,10 +127,21 @@ usort($scheduleItems, function ($a, $b) {
         uploadOverlay.setAttribute("aria-hidden", "true");
     }
 
-    fabUpload.addEventListener("click", () => uploadInput.click());
+    fabUpload.addEventListener("click", () => {
+        if (!navigator.onLine) {
+            alert("Upload jadwal membutuhkan koneksi internet.");
+            return;
+        }
+        uploadInput.click();
+    });
 
     uploadInput.addEventListener("change", async () => {
         if (!uploadInput.files || uploadInput.files.length === 0) return;
+        if (!navigator.onLine) {
+            alert("Upload dan OCR hanya bisa dilakukan saat online.");
+            uploadInput.value = "";
+            return;
+        }
 
         if (!window.fetch) {
             uploadForm.submit();
@@ -145,6 +175,40 @@ usort($scheduleItems, function ($a, $b) {
     const toggles = document.querySelectorAll(".schedule-toggle");
     const renameButtons = document.querySelectorAll(".rename-link");
 
+    async function persistActiveSchedule(scheduleId) {
+        if (window.SiJadwalPWA) {
+            return window.SiJadwalPWA.updateActiveSchedule(scheduleId);
+        }
+
+        const response = await fetch("../backend/set_active_schedule.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ scheduleId })
+        });
+        const data = await response.json();
+        if (!data.ok) {
+            throw new Error(data.message || "Gagal mengaktifkan jadwal");
+        }
+        return { ok: true, queued: false };
+    }
+
+    async function persistRenameSchedule(scheduleId, name) {
+        if (window.SiJadwalPWA) {
+            return window.SiJadwalPWA.renameSchedule(scheduleId, name);
+        }
+
+        const response = await fetch("../backend/rename_schedule.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ scheduleId, name })
+        });
+        const data = await response.json();
+        if (!data.ok) {
+            throw new Error(data.message || "Gagal rename");
+        }
+        return data;
+    }
+
     toggles.forEach(toggle => {
         toggle.addEventListener("change", async (event) => {
             const target = event.target;
@@ -155,15 +219,7 @@ usort($scheduleItems, function ($a, $b) {
 
             const scheduleId = target.dataset.id;
             try {
-                const response = await fetch("../backend/set_active_schedule.php", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ scheduleId })
-                });
-                const data = await response.json();
-                if (!data.ok) {
-                    throw new Error(data.message || "Gagal mengaktifkan jadwal");
-                }
+                const result = await persistActiveSchedule(scheduleId);
 
                 toggles.forEach(item => {
                     if (item.dataset.id !== scheduleId) {
@@ -172,6 +228,9 @@ usort($scheduleItems, function ($a, $b) {
                     }
                 });
                 target.closest(".schedule-card")?.classList.add("active");
+                if (result?.queued) {
+                    alert("Perubahan disimpan offline dan akan disinkronkan otomatis.");
+                }
             } catch (err) {
                 target.checked = false;
                 alert("Gagal mengaktifkan jadwal. Silakan coba lagi.");
@@ -191,17 +250,12 @@ usort($scheduleItems, function ($a, $b) {
             }
 
             try {
-                const response = await fetch("../backend/rename_schedule.php", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ scheduleId, name: newName.trim() })
-                });
-                const data = await response.json();
-                if (!data.ok) {
-                    throw new Error(data.message || "Gagal rename");
-                }
+                const data = await persistRenameSchedule(scheduleId, newName.trim());
                 if (nameEl) {
-                    nameEl.textContent = data.name;
+                    nameEl.textContent = data.name || newName.trim();
+                }
+                if (data?.queued) {
+                    alert("Rename tersimpan offline dan akan disinkronkan otomatis.");
                 }
             } catch (err) {
                 alert("Gagal mengganti nama jadwal.");

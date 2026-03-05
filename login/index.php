@@ -2,8 +2,14 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-session_start();
+require_once __DIR__ . '/../backend/session.php';
 require_once __DIR__ . '/../backend/db.php';
+app_start_session();
+
+if (!empty($_SESSION['username'])) {
+    header("Location: ../beranda/index.php");
+    exit();
+}
 
 if (!empty($_SESSION['message'])) {
     echo '<div style="color: green; background: #e0ffe0; padding: 10px; margin: 10px 20px; border-radius: 5px;">' .
@@ -37,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->fetch();
 
         if (password_verify($password, $hashedPassword)) {
+            session_regenerate_id(true);
             $_SESSION['username'] = $username;
             $stmt->close();
             $conn->close();
@@ -59,6 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta charset="utf-8" />
+  <link rel="manifest" href="/si-jadwal/manifest.webmanifest" />
+  <meta name="theme-color" content="#121212" />
   <title>Login</title>
   <link rel="stylesheet" href="global.css" />
   <link rel="stylesheet" href="styleguide.css" />
@@ -115,5 +124,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 
   </div>
+  <script src="/si-jadwal/assets/js/pwa-core.js?v=20260304"></script>
+  <script>
+    if (window.SiJadwalPWA) {
+      window.SiJadwalPWA.init();
+    }
+  </script>
 </body>
 </html>

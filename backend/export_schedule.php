@@ -1,7 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/session.php';
+app_start_session();
 
 if (empty($_SESSION['username'])) {
     header("Location: ../login/index.php");
@@ -75,7 +74,7 @@ header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="' . $filename . '"');
 
 $output = fopen('php://output', 'w');
-$header = ["No", "Kode", "Nama Matakuliah", "SKS", "Kelas/Rombel", "Pengampu", "Jenis", "Ruang", "Hari", "Jam Mulai", "Jam Selesai"];
+$header = ["No", "Kode", "Nama Matakuliah", "SKS", "Kelas/Rombel", "Pengampu", "Jenis", "Ruang", "Hari", "Jam Mulai", "Jam Selesai", "Mode"];
 fputcsv($output, $header);
 
 foreach ($rows as $row) {
@@ -95,6 +94,7 @@ foreach ($rows as $row) {
         $hari,
         $row['jam_mulai'] ?? '',
         $row['jam_selesai'] ?? '',
+        $row['mode'] ?? 'luring',
     ];
     fputcsv($output, $line);
 }

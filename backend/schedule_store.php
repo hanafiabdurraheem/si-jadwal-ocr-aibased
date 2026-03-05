@@ -1,6 +1,21 @@
 <?php
 require_once __DIR__ . '/db.php';
 
+function schedule_has_mode_column($conn) {
+    static $cache = null;
+    if ($cache !== null) {
+        return $cache;
+    }
+
+    $result = $conn->query("SHOW COLUMNS FROM schedule LIKE 'mode'");
+    if ($result && $result->num_rows > 0) {
+        $cache = true;
+        return true;
+    }
+    $cache = false;
+    return false;
+}
+
 function schedule_map_row($row) {
     return [
         'id' => $row['set_id'],
@@ -93,7 +108,12 @@ function add_schedule_set($username, $setId, $name, $rows, $makeActive = true) {
         $stmt->close();
     }
 
-    $stmt = $conn->prepare("INSERT INTO schedule (username, set_id, name, is_active, no_col, kode, nama_matakuliah, sks, kelas, pengampu, jenis, ruang, hari, jam_mulai, jam_selesai) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    $hasMode = schedule_has_mode_column($conn);
+    if ($hasMode) {
+        $stmt = $conn->prepare("INSERT INTO schedule (username, set_id, name, is_active, no_col, kode, nama_matakuliah, sks, kelas, pengampu, jenis, ruang, hari, jam_mulai, jam_selesai, mode) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    } else {
+        $stmt = $conn->prepare("INSERT INTO schedule (username, set_id, name, is_active, no_col, kode, nama_matakuliah, sks, kelas, pengampu, jenis, ruang, hari, jam_mulai, jam_selesai) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    }
 
     foreach ($rows as $row) {
         $no = $row['No'] ?? $row['no'] ?? '';
@@ -108,7 +128,16 @@ function add_schedule_set($username, $setId, $name, $rows, $makeActive = true) {
         $jamMulai = $row['Jam Mulai'] ?? '';
         $jamSelesai = $row['Jam Selesai'] ?? '';
         $active = $makeActive ? 1 : 0;
-        $stmt->bind_param('sssssssssssssss', $username, $setId, $name, $active, $no, $kode, $nama, $sks, $kelas, $pengampu, $jenis, $ruang, $hari, $jamMulai, $jamSelesai);
+        if ($hasMode) {
+            $mode = $row['Mode'] ?? $row['mode'] ?? 'luring';
+            $mode = strtolower(trim((string)$mode));
+            if (!in_array($mode, ['luring', 'daring', 'asingkron'], true)) {
+                $mode = 'luring';
+            }
+            $stmt->bind_param('ssssssssssssssss', $username, $setId, $name, $active, $no, $kode, $nama, $sks, $kelas, $pengampu, $jenis, $ruang, $hari, $jamMulai, $jamSelesai, $mode);
+        } else {
+            $stmt->bind_param('sssssssssssssss', $username, $setId, $name, $active, $no, $kode, $nama, $sks, $kelas, $pengampu, $jenis, $ruang, $hari, $jamMulai, $jamSelesai);
+        }
         $stmt->execute();
     }
     $stmt->close();
@@ -130,12 +159,20 @@ function replace_schedule_set($username, $setId, $name, $rows, $makeActive = fal
 
 function get_schedule_rows($username, $setId) {
     $conn = db_connect();
-    $stmt = $conn->prepare("SELECT id, set_id, name, is_active, no_col, kode, nama_matakuliah, sks, kelas, pengampu, jenis, ruang, hari, jam_mulai, jam_selesai FROM schedule WHERE username=? AND set_id=? ORDER BY id ASC");
+    $hasMode = schedule_has_mode_column($conn);
+    if ($hasMode) {
+        $stmt = $conn->prepare("SELECT id, set_id, name, is_active, no_col, kode, nama_matakuliah, sks, kelas, pengampu, jenis, ruang, hari, jam_mulai, jam_selesai, mode FROM schedule WHERE username=? AND set_id=? ORDER BY id ASC");
+    } else {
+        $stmt = $conn->prepare("SELECT id, set_id, name, is_active, no_col, kode, nama_matakuliah, sks, kelas, pengampu, jenis, ruang, hari, jam_mulai, jam_selesai FROM schedule WHERE username=? AND set_id=? ORDER BY id ASC");
+    }
     $stmt->bind_param('ss', $username, $setId);
     $stmt->execute();
     $res = $stmt->get_result();
     $rows = [];
     while ($r = $res->fetch_assoc()) {
+        if (!$hasMode) {
+            $r['mode'] = 'luring';
+        }
         $rows[] = $r;
     }
     $stmt->close();

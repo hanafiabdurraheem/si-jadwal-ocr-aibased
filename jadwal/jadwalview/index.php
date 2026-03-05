@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once __DIR__ . '/../../backend/session.php';
+app_start_session();
 
 /* =========================
    KONFIGURASI USER & FILE
@@ -76,6 +77,7 @@ $nextDay = $daysOrder[$nextIndex];
 <head>
     <meta charset="UTF-8">
     <title>Jadwal Kuliah</title>
+    <link rel="stylesheet" href="/si-jadwal/backend/theme.php?v=<?= time() ?>">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>

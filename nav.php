@@ -9,11 +9,12 @@
     <img src="../img/tugas.svg" alt="Tugas" width="24"><br><small>Tugas</small>
   </a>
   <a href="../kelas/index.php" class="nav-item">
-    <img src="../img/pengingat.svg" alt="Pengingat" width="24"><br><small>Pengingat</small>
+    <img src="../img/kelas.svg" alt="Kelas" width="24"><br><small>Kelas</small>
   </a>
   <a href="../pengaturan/index.php" class="nav-item">
     <img src="../img/pengaturan.svg" alt="Pengaturan" width="24"><br><small>Pengaturan</small>
   </a>
+  <span id="pwa-connectivity-badge" aria-live="polite">Online</span>
 </div>
 
 <style>
@@ -102,7 +103,7 @@
                 margin: 3em 0
             }
 
-            #bottom-nav {
+#bottom-nav {
   position: fixed;
   bottom: 0;
   left: 50%;
@@ -117,6 +118,23 @@
   justify-content: space-around;
   align-items: center;
   z-index: 9999;
+}
+
+#pwa-connectivity-badge {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  background: #2f9f7a;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 10px;
+  padding: 2px 8px;
+  font-family: Poppins, sans-serif;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+#pwa-connectivity-badge.offline {
+  background: #c76363;
 }
 
 .nav-item {
@@ -151,3 +169,9 @@
 
 
         </style>
+<script src="/si-jadwal/assets/js/pwa-core.js?v=20260304"></script>
+<script>
+  if (window.SiJadwalPWA) {
+    window.SiJadwalPWA.init();
+  }
+</script>

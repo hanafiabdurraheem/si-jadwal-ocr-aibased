@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once __DIR__ . '/session.php';
+app_start_session();
 require_once __DIR__ . '/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {

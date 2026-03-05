@@ -1,0 +1,26 @@
+{
+  "name": "Si Jadwal",
+  "short_name": "SiJadwal",
+  "description": "Aplikasi jadwal akademik dengan dukungan offline terbatas.",
+  "start_url": "/si-jadwal/beranda/index.php",
+  "scope": "/si-jadwal/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f0f12",
+  "theme_color": "#121212",
+  "lang": "id-ID",
+  "icons": [
+    {
+      "src": "/si-jadwal/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/si-jadwal/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

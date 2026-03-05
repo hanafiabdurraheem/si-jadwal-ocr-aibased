@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once __DIR__ . '/../backend/session.php';
+app_start_session();
 
 // Check if user is logged in
 if (empty($_SESSION['username'])) {
@@ -16,8 +17,11 @@ $username = $_SESSION['username'];
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta charset="utf-8" />
+    <link rel="manifest" href="/si-jadwal/manifest.webmanifest" />
+    <meta name="theme-color" content="#121212" />
     <link rel="stylesheet" href="global.css?v=<?= time() ?>" />
     <link rel="stylesheet" href="styleguide.css?v=<?= time() ?>" />
+    <link rel="stylesheet" href="/si-jadwal/backend/theme.php?v=<?= time() ?>" />
     <link rel="stylesheet" href="style.css?v=<?= time() ?>" />
     <link rel="stylesheet" href="detailed/global.css?v=<?= time() ?>" />
     <link rel="stylesheet" href="detailed/styleguide.css?v=<?= time() ?>" />
@@ -36,8 +40,12 @@ $username = $_SESSION['username'];
           echo strftime('%A, %d %B');
         ?>
       </span>
-      <?php if (isset($_GET['notice']) && $_GET['notice'] === 'updated'): ?>
-        <div id="toastNotice" class="toast-notice">Perubahan sudah dilakukan</div>
+      <?php if (isset($_GET['notice']) && in_array($_GET['notice'], ['updated', 'queued'], true)): ?>
+        <div id="toastNotice" class="toast-notice">
+          <?php echo $_GET['notice'] === 'queued'
+            ? 'Perubahan disimpan offline. Sinkron otomatis saat online.'
+            : 'Perubahan sudah dilakukan'; ?>
+        </div>
       <?php endif; ?>
       
         

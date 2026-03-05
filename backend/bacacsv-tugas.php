@@ -1,14 +1,11 @@
 <?php
-session_start();
+require_once __DIR__ . '/session.php';
+app_start_session();
 if (!isset($_SESSION['username'])) {
     header("Location: index.php");
     exit;
 }
 
-$username = $_SESSION['username'];
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 $username = $_SESSION['username'];
 $filePath = __DIR__ . "/../uploads/$username/tugas.csv";
 
@@ -31,6 +28,7 @@ if (isset($_GET['hapus'])) {
 <html>
 <head>
     <title>Daftar Tugas</title>
+    <link rel="stylesheet" href="/si-jadwal/backend/theme.php?v=<?= time() ?>">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -51,7 +49,7 @@ if (isset($_GET['hapus'])) {
         }
 
         th {
-            background-color: #4f46e5;
+            background-color: var(--accent-700);
             color: white;
         }
 

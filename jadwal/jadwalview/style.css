@@ -27,7 +27,7 @@ h1 {
     display: inline-block;
     padding: 8px 16px;
     margin: 0 5px;
-    background: #6552fe;
+    background: var(--accent);
     color: #ffffff;
     text-decoration: none;
     border-radius: 6px;
@@ -36,7 +36,7 @@ h1 {
 }
 
 .btn:hover {
-    background: #9283ff;
+    background: var(--accent-soft);
 }
 
 /* ====== TABLE CONTAINER ====== */
@@ -69,7 +69,7 @@ thead {
 }
 
 th {
-    background-color: rgba(79, 70, 229, 0.6); /* opsional, semi-transparan */
+    background-color: rgba(var(--accent-rgb), 0.6); /* opsional, semi-transparan */
     background-image: url(../../img/gradien.png);
     background-position: center;
     color: white;
@@ -84,7 +84,7 @@ td {
 }
 
 tbody tr:hover {
-    background: #9283ff;
+    background: var(--accent-soft);
 }
 
 /* ====== MOBILE OPTIMIZATION ====== */

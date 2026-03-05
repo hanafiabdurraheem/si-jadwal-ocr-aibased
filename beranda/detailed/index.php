@@ -1,7 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../../backend/session.php';
+app_start_session();
 
 // Check if user is logged in
 if (empty($_SESSION['username'])) {
@@ -86,13 +85,14 @@ $jadwalYangDitampilkan = $jadwalTerdekat ?? $jadwalSedangBerlangsung;
   <meta charset="utf-8" />
   <link rel="stylesheet" href="global.css?v=<?= time() ?>" />
   <link rel="stylesheet" href="styleguide.css?v=<?= time() ?>" />
+  <link rel="stylesheet" href="/si-jadwal/backend/theme.php?v=<?= time() ?>" />
   <link rel="stylesheet" href="style.css?v=<?= time() ?>" />
 </head>
 
 <style>
 .jadwal-container {
     background-image: url(../img/mesh-gradient-1.png);
-    background-color: #6552fe;
+    background-color: var(--accent);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

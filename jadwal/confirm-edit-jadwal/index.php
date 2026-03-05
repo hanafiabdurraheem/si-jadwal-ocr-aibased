@@ -1,7 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../../backend/session.php';
+app_start_session();
 
 if (empty($_SESSION['username'])) {
     header("Location: ../../login/index.php");
@@ -26,7 +25,7 @@ if (!$activeItem) {
     exit();
 }
 
-$header = ["No","Kode","Nama Matakuliah","SKS","Kelas/Rombel","Pengampu","Jenis","Ruang","Hari","Jam Mulai","Jam Selesai"];
+$header = ["No","Kode","Nama Matakuliah","SKS","Kelas/Rombel","Pengampu","Jenis","Ruang","Hari","Jam Mulai","Jam Selesai","Mode"];
 $rowsAssoc = [];
 $jadwal = [];
 foreach ($daysOrder as $day) $jadwal[$day] = [];
@@ -47,6 +46,7 @@ foreach ($dbRows as $r) {
         "Hari" => $r['hari'] ?? '',
         "Jam Mulai" => $r['jam_mulai'] ?? '',
         "Jam Selesai" => $r['jam_selesai'] ?? '',
+        "Mode" => $r['mode'] ?? 'luring',
         "_index" => $idx++
     ];
     $dayValue = trim($rowAssoc['Hari']);
@@ -67,7 +67,10 @@ function h($value) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="manifest" href="/si-jadwal/manifest.webmanifest">
+    <meta name="theme-color" content="#121212">
     <title>Edit Jadwal Interaktif</title>
+    <link rel="stylesheet" href="/si-jadwal/backend/theme.php?v=<?= time() ?>">
     <link rel="stylesheet" href="style.css?v=<?= time() ?>">
 </head>
 <body>
@@ -126,8 +129,15 @@ function h($value) {
         </div>
     </div>
 
+    <script src="/si-jadwal/assets/js/pwa-core.js?v=20260304"></script>
+    <script>
+      if (window.SiJadwalPWA) {
+        window.SiJadwalPWA.init().catch(() => null);
+      }
+    </script>
     <script>
         const scheduleId = <?php echo json_encode($activeItem['id'] ?? ''); ?>;
+        const activeScheduleName = <?php echo json_encode($activeItem['name'] ?? 'Jadwal', JSON_UNESCAPED_UNICODE); ?>;
         const scheduleHeader = <?php echo json_encode($header); ?>;
         const scheduleRows = <?php echo json_encode($rowsAssoc); ?>;
         const daysOrder = <?php echo json_encode($daysOrder); ?>;
@@ -215,6 +225,10 @@ function h($value) {
             }
             if (metaEls[1]) {
                 metaEls[1].textContent = row["Ruang"] || "";
+            }
+            if (metaEls[2]) {
+                const modeValue = row["Mode"] || "luring";
+                metaEls[2].textContent = `Mode: ${modeValue}`;
             }
         }
 
@@ -322,7 +336,12 @@ function h($value) {
             metaRoom.className = "card-meta";
             metaRoom.textContent = row["Ruang"] || "";
 
-            card.append(conflictBadge, title, metaTime, metaRoom);
+            const metaMode = document.createElement("div");
+            metaMode.className = "card-meta";
+            const modeValue = row["Mode"] || "luring";
+            metaMode.textContent = `Mode: ${modeValue}`;
+
+            card.append(conflictBadge, title, metaTime, metaRoom, metaMode);
             return card;
         }
 
@@ -450,6 +469,93 @@ function h($value) {
 
         cards.forEach(card => bindCardEvents(card));
 
+        function serializeRowsForSave() {
+            return [...scheduleRows]
+                .sort((a, b) => a._index - b._index)
+                .map(row => {
+                    const cleanRow = {};
+                    scheduleHeader.forEach(col => {
+                        cleanRow[col] = row[col] ?? "";
+                    });
+                    return cleanRow;
+                });
+        }
+
+        function rebuildBoardFromRows(rowsFromLocal) {
+            scheduleRows.splice(0, scheduleRows.length);
+            rowsByIndex.clear();
+
+            let counter = 0;
+            rowsFromLocal.forEach((rowData) => {
+                const row = { _index: counter++ };
+                scheduleHeader.forEach(col => {
+                    row[col] = rowData[col] ?? "";
+                });
+                scheduleRows.push(row);
+                rowsByIndex.set(row._index, row);
+            });
+
+            nextRowIndex = counter;
+            document.querySelectorAll(".day-column .cards").forEach(container => {
+                container.innerHTML = "";
+            });
+
+            scheduleRows.forEach(row => {
+                const day = row["Hari"] && daysOrder.includes(row["Hari"]) ? row["Hari"] : extraDay;
+                const targetColumn = document.querySelector(`.day-column[data-day="${day}"] .cards`);
+                const card = buildCardElement(row, day);
+                if (targetColumn) {
+                    targetColumn.appendChild(card);
+                }
+                bindCardEvents(card);
+            });
+
+            isDirty = false;
+            saveBtn.disabled = true;
+            updateConflicts();
+        }
+
+        async function seedLocalSchedule() {
+            if (!window.SiJadwalPWA) {
+                return;
+            }
+
+            const rowsForStorage = serializeRowsForSave();
+            await window.SiJadwalPWA.primeSchedule({
+                id: scheduleId,
+                name: activeScheduleName,
+                header: scheduleHeader,
+                rows: rowsForStorage,
+                isActive: true
+            });
+        }
+
+        async function hydrateLocalSchedule() {
+            if (!window.SiJadwalPWA || !scheduleId) {
+                return;
+            }
+
+            const local = await window.SiJadwalPWA.getSchedule(scheduleId);
+            if (!local || !Array.isArray(local.rows) || local.rows.length === 0) {
+                await seedLocalSchedule();
+                return;
+            }
+
+            const currentRows = serializeRowsForSave();
+            const localRows = local.rows.map(row => {
+                const clean = {};
+                scheduleHeader.forEach(col => {
+                    clean[col] = row[col] ?? "";
+                });
+                return clean;
+            });
+
+            if (JSON.stringify(currentRows) !== JSON.stringify(localRows)) {
+                rebuildBoardFromRows(localRows);
+                setStatus("Memuat data jadwal lokal.");
+            }
+        }
+
         columns.forEach(column => {
             column.addEventListener("dragover", (e) => {
                 e.preventDefault();
@@ -550,6 +656,14 @@ function h($value) {
                     opt.textContent = day;
                     input.appendChild(opt);
                 });
+            } else if (col === "Mode") {
+                input = document.createElement("select");
+                ["luring", "daring", "asingkron"].forEach(mode => {
+                    const opt = document.createElement("option");
+                    opt.value = mode;
+                    opt.textContent = mode;
+                    input.appendChild(opt);
+                });
             } else if (col === "Jam Mulai" || col === "Jam Selesai") {
                 input = document.createElement("input");
                 input.type = "time";
@@ -577,6 +691,8 @@ function h($value) {
                 if (fieldInputs[col]) {
                     if (col === "Jam Mulai" || col === "Jam Selesai") {
                         fieldInputs[col].value = normalizeTimeValue(row[col]);
+                    } else if (col === "Mode") {
+                        fieldInputs[col].value = row[col] || "luring";
                     } else {
                         fieldInputs[col].value = row[col] ?? "";
                     }
@@ -631,40 +747,49 @@ function h($value) {
             saveBtn.disabled = true;
             setStatus("Menyimpan...");
 
-            const sortedRows = [...scheduleRows]
-                .sort((a, b) => a._index - b._index)
-                .map(row => {
-                    const cleanRow = {};
-                    scheduleHeader.forEach(col => {
-                        cleanRow[col] = row[col] ?? "";
-                    });
-                    return cleanRow;
-                });
+            const sortedRows = serializeRowsForSave();
 
             try {
-                const response = await fetch("../../backend/save_schedule.php", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
+                let result;
+                if (window.SiJadwalPWA) {
+                    result = await window.SiJadwalPWA.saveSchedule({
                         scheduleId,
+                        name: activeScheduleName,
                         header: scheduleHeader,
                         rows: sortedRows
-                    })
-                });
-                const data = await response.json();
-                if (!data.ok) {
-                    throw new Error(data.message || "Gagal menyimpan");
+                    });
+                } else {
+                    const response = await fetch("../../backend/save_schedule.php", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            scheduleId,
+                            header: scheduleHeader,
+                            rows: sortedRows
+                        })
+                    });
+                    const data = await response.json();
+                    if (!data.ok) {
+                        throw new Error(data.message || "Gagal menyimpan");
+                    }
+                    result = { ok: true, queued: false };
                 }
 
                 isDirty = false;
-                setStatus("Perubahan tersimpan.");
+                if (result?.queued) {
+                    setStatus("Perubahan tersimpan offline. Akan sinkron otomatis.");
+                } else {
+                    setStatus("Perubahan tersimpan.");
+                }
                 saveBtn.disabled = true;
-                window.location.href = "../../beranda/index.php?notice=updated";
+                const notice = result?.queued ? "queued" : "updated";
+                window.location.href = `../../beranda/index.php?notice=${notice}`;
             } catch (err) {
                 setStatus("Gagal menyimpan. Coba lagi.", true);
                 saveBtn.disabled = false;
             }
         });
+        hydrateLocalSchedule().catch(() => null);
         updateConflicts();
     </script>
 </body>

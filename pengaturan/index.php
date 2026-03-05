@@ -1,7 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../backend/session.php';
+app_start_session();
 
 if (empty($_SESSION['username'])) {
     header("Location: ../login/index.php");
@@ -15,9 +14,10 @@ $messages = [];
 $errors = [];
 $successRedirect = false;
 $tab = $_GET['tab'] ?? 'jadwal';
-if (!in_array($tab, ['jadwal', 'akun'], true)) {
+if (!in_array($tab, ['jadwal', 'akun', 'tampilan', 'aplikasi'], true)) {
     $tab = 'jadwal';
 }
+$allowedThemes = ['ungu', 'kuning', 'biru', 'hijau', 'magenta'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -134,6 +134,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+
+    if ($action === 'update_theme') {
+        $theme = $_POST['theme_color'] ?? '';
+        if (!in_array($theme, $allowedThemes, true)) {
+            $errors[] = 'Tema tidak valid.';
+        } else {
+            $conn = db_connect();
+            if (!$conn) {
+                $errors[] = 'Gagal koneksi ke database.';
+            } else {
+                $stmt = $conn->prepare("INSERT INTO user_preference (username, theme_color) VALUES (?, ?) ON DUPLICATE KEY UPDATE theme_color=VALUES(theme_color), updated_at=CURRENT_TIMESTAMP");
+                $stmt->bind_param('ss', $username, $theme);
+                if ($stmt->execute()) {
+                    $messages[] = 'Tema berhasil diperbarui.';
+                } else {
+                    $errors[] = 'Gagal memperbarui tema.';
+                }
+                $stmt->close();
+                $conn->close();
+            }
+        }
+    }
 }
 
 if ($successRedirect && empty($errors)) {
@@ -146,6 +168,20 @@ if ($successRedirect && empty($errors)) {
 }
 
 $username = $_SESSION['username'];
+
+$currentTheme = 'ungu';
+$conn = db_connect();
+if ($conn) {
+    $stmt = $conn->prepare("SELECT theme_color FROM user_preference WHERE username=? LIMIT 1");
+    $stmt->bind_param('s', $username);
+    $stmt->execute();
+    $stmt->bind_result($themeValue);
+    if ($stmt->fetch() && $themeValue) {
+        $currentTheme = $themeValue;
+    }
+    $stmt->close();
+    $conn->close();
+}
 
 if (isset($_GET['notice']) && $_GET['notice'] === 'success') {
     $messages[] = 'Perubahan berhasil disimpan.';
@@ -165,8 +201,11 @@ $userDir = __DIR__ . '/../uploads/' . $username;
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta charset="utf-8" />
+    <link rel="manifest" href="/si-jadwal/manifest.webmanifest" />
+    <meta name="theme-color" content="#121212" />
     <link rel="stylesheet" href="global.css" />
     <link rel="stylesheet" href="styleguide.css" />
+    <link rel="stylesheet" href="/si-jadwal/backend/theme.php?v=<?= time() ?>" />
     <link rel="stylesheet" href="style.css?v=<?= time() ?>" />
   </head>
   <body>
@@ -187,6 +226,8 @@ $userDir = __DIR__ . '/../uploads/' . $username;
         <div class="tabs">
           <a class="tab <?php echo $tab === 'jadwal' ? 'active' : ''; ?>" href="?tab=jadwal">Jadwal</a>
           <a class="tab <?php echo $tab === 'akun' ? 'active' : ''; ?>" href="?tab=akun">Akun</a>
+          <a class="tab <?php echo $tab === 'tampilan' ? 'active' : ''; ?>" href="?tab=tampilan">Tampilan</a>
+          <a class="tab <?php echo $tab === 'aplikasi' ? 'active' : ''; ?>" href="?tab=aplikasi">Aplikasi</a>
         </div>
 
         <?php if ($tab === 'jadwal'): ?>
@@ -278,6 +319,72 @@ $userDir = __DIR__ . '/../uploads/' . $username;
         </section>
         <?php endif; ?>
 
+        <?php if ($tab === 'tampilan'): ?>
+        <section class="section">
+          <div class="section-title">Tampilan</div>
+          <div class="account-grid">
+            <form class="account-card" method="POST">
+              <input type="hidden" name="action" value="update_theme">
+              <div class="card-title">Tema Warna</div>
+              <p style="font-size: 12px; color: #b0b0b8;">Pilih warna tema sesuai selera.</p>
+              <div class="theme-picker">
+                <label class="theme-option">
+                  <input type="radio" name="theme_color" value="ungu" <?= $currentTheme === 'ungu' ? 'checked' : '' ?>>
+                  <span class="swatch" style="--swatch:#6552fe;"></span>
+                  <span>Ungu</span>
+                </label>
+                <label class="theme-option">
+                  <input type="radio" name="theme_color" value="kuning" <?= $currentTheme === 'kuning' ? 'checked' : '' ?>>
+                  <span class="swatch" style="--swatch:#fbbf24;"></span>
+                  <span>Kuning</span>
+                </label>
+                <label class="theme-option">
+                  <input type="radio" name="theme_color" value="biru" <?= $currentTheme === 'biru' ? 'checked' : '' ?>>
+                  <span class="swatch" style="--swatch:#3b82f6;"></span>
+                  <span>Biru</span>
+                </label>
+                <label class="theme-option">
+                  <input type="radio" name="theme_color" value="hijau" <?= $currentTheme === 'hijau' ? 'checked' : '' ?>>
+                  <span class="swatch" style="--swatch:#22c55e;"></span>
+                  <span>Hijau</span>
+                </label>
+                <label class="theme-option">
+                  <input type="radio" name="theme_color" value="magenta" <?= $currentTheme === 'magenta' ? 'checked' : '' ?>>
+                  <span class="swatch" style="--swatch:#d946ef;"></span>
+                  <span>Magenta</span>
+                </label>
+              </div>
+              <button type="submit" class="btn-primary">Simpan Tema</button>
+            </form>
+          </div>
+        </section>
+        <?php endif; ?>
+
+        <?php if ($tab === 'aplikasi'): ?>
+        <section class="section">
+          <div class="section-title">Aplikasi</div>
+          <div class="account-grid">
+            <div class="account-card">
+              <div class="card-title">Notifikasi Mobile</div>
+              <p style="font-size: 12px; color: #b0b0b8;">
+                Aktifkan notifikasi pengingat kelas dan deadline tugas. Notifikasi hanya tampil jika izin diberikan.
+              </p>
+              <button type="button" id="enableNotificationsBtn" class="btn-primary">Aktifkan Notifikasi</button>
+              <div id="notificationStatus" style="font-size:12px; color:#b0b0b8; margin-top:8px;"></div>
+            </div>
+
+            <div class="account-card">
+              <div class="card-title">Install Android App</div>
+              <p style="font-size: 12px; color: #b0b0b8;">
+                Pasang Si Jadwal ke layar utama Android agar berjalan seperti aplikasi native.
+              </p>
+              <button type="button" id="installAppBtn" class="btn-primary">Install App</button>
+              <div id="installStatus" style="font-size:12px; color:#b0b0b8; margin-top:8px;"></div>
+            </div>
+          </div>
+        </section>
+        <?php endif; ?>
+
         <a href="../backend/logout.php" class="logout">Logout</a>
       </div>
     </div>
@@ -310,6 +417,123 @@ $userDir = __DIR__ . '/../uploads/' . $username;
           }
         });
       });
+
+      const notifBtn = document.getElementById('enableNotificationsBtn');
+      const notifStatus = document.getElementById('notificationStatus');
+      const installBtn = document.getElementById('installAppBtn');
+      const installStatus = document.getElementById('installStatus');
+
+      function updateNotifStatus(message) {
+        if (notifStatus) {
+          notifStatus.textContent = message;
+        }
+      }
+
+      async function getDiag() {
+        if (!window.SiJadwalPWA || !window.SiJadwalPWA.getRuntimeDiagnostics) return null;
+        return window.SiJadwalPWA.getRuntimeDiagnostics();
+      }
+
+      if (notifBtn) {
+        notifBtn.addEventListener('click', async () => {
+          if (!window.SiJadwalPWA) {
+            updateNotifStatus('Modul PWA belum siap. Muat ulang halaman.');
+            return;
+          }
+
+          const diag = await getDiag();
+          if (diag && !diag.isSecureContext) {
+            if (diag.isLanIp || (!diag.isLocalhost && diag.protocol !== 'https:')) {
+              updateNotifStatus('Notifikasi tidak bisa di HTTP/LAN IP. Untuk testing tanpa hosting gunakan HTTPS tunnel (Cloudflare Tunnel / ngrok).');
+            } else {
+              updateNotifStatus('Notifikasi butuh secure context (HTTPS/localhost).');
+            }
+            return;
+          }
+
+          const result = await window.SiJadwalPWA.requestNotificationPermission();
+          if (result.ok) {
+            updateNotifStatus('Izin notifikasi aktif. Notifikasi uji sudah dikirim.');
+          } else if (result.permission === 'denied') {
+            updateNotifStatus('Izin ditolak. Buka Site settings di Chrome Android, aktifkan Notifications untuk situs ini.');
+          } else if (result.permission === 'unsupported') {
+            updateNotifStatus('Browser tidak mendukung notifikasi.');
+          } else if (result.reason === 'insecure-context') {
+            updateNotifStatus('Notifikasi butuh HTTPS. Buka aplikasi dari URL HTTPS, bukan HTTP.');
+          } else if (result.reason === 'service-worker-unsupported') {
+            updateNotifStatus('Browser ini tidak mendukung Service Worker.');
+          } else {
+            updateNotifStatus('Izin notifikasi belum diberikan. Coba lagi lalu pilih Allow.');
+          }
+        });
+      }
+
+      if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+          updateNotifStatus('Izin notifikasi aktif.');
+        } else if (Notification.permission === 'denied') {
+          updateNotifStatus('Izin notifikasi ditolak.');
+        } else {
+          updateNotifStatus('Izin notifikasi belum diberikan.');
+        }
+      }
+
+      function setInstallStatus(message) {
+        if (installStatus) {
+          installStatus.textContent = message;
+        }
+      }
+
+      function markInstallAvailability() {
+        if (!installBtn) return;
+        installBtn.disabled = false;
+        setInstallStatus('Siap di-install.');
+      }
+
+      if (installBtn) {
+        installBtn.disabled = false;
+        setInstallStatus('Siap install. Jika prompt belum muncul, gunakan menu Chrome.');
+
+        installBtn.addEventListener('click', async () => {
+          if (!window.SiJadwalPWA) {
+            setInstallStatus('Modul PWA belum siap. Muat ulang halaman.');
+            return;
+          }
+
+          const diag = await getDiag();
+          if (diag && !diag.isSecureContext) {
+            if (diag.isLanIp || (!diag.isLocalhost && diag.protocol !== 'https:')) {
+              setInstallStatus('Install app tidak muncul di HTTP/LAN IP. Gunakan HTTPS tunnel (Cloudflare Tunnel/ngrok) lalu buka URL HTTPS di Android.');
+            } else {
+              setInstallStatus('Install app butuh secure context (HTTPS/localhost).');
+            }
+            return;
+          }
+
+          if (window.SiJadwalPWA.isStandaloneMode && window.SiJadwalPWA.isStandaloneMode()) {
+            setInstallStatus('Aplikasi sudah ter-install.');
+            return;
+          }
+
+          const accepted = await window.SiJadwalPWA.promptInstall();
+          if (accepted) {
+            setInstallStatus('Prompt install ditampilkan. Lanjutkan dari browser.');
+          } else {
+            setInstallStatus('Prompt belum tersedia. Buka Chrome menu (⋮) > Add to Home screen / Install app. Coba lagi setelah membuka app 1-2 kali.');
+          }
+        });
+
+        window.addEventListener('si-jadwal:install-available', markInstallAvailability);
+
+        if (window.SiJadwalPWA && window.SiJadwalPWA.isStandaloneMode && window.SiJadwalPWA.isStandaloneMode()) {
+          installBtn.disabled = true;
+          setInstallStatus('Aplikasi sudah ter-install.');
+        } else if (window.SiJadwalPWA && window.SiJadwalPWA.canPromptInstall && window.SiJadwalPWA.canPromptInstall()) {
+          markInstallAvailability();
+        } else {
+          setInstallStatus('Jika prompt belum muncul, gunakan menu Chrome (⋮) > Add to Home screen / Install app. Untuk localhost via IP, pakai HTTPS tunnel.');
+        }
+      }
     </script>
   </body>
 </html>

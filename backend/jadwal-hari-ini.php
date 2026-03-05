@@ -1,7 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/session.php';
+app_start_session();
 require_once __DIR__ . '/schedule_store.php';
 
 $username = $_SESSION['username'] ?? '';

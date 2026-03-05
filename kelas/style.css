@@ -147,7 +147,7 @@
 }
 
 .btn-primary {
-  background: #6552fe;
+  background: var(--accent, #6552fe);
 }
 
 .btn-secondary {
@@ -167,8 +167,309 @@
   font-size: 13px;
 }
 
+.alert {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.alert.success {
+  background: rgba(16, 185, 129, 0.12);
+  color: #9ae6b4;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.alert.error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.kelas-actions {
+  position: relative;
+  min-height: 50px;
+  margin-bottom: 16px;
+}
+
+.fab-add {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent, #6552fe);
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+  position: fixed;
+  right: 18px;
+  bottom: 230px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
+  z-index: 12002;
+}
+
+.fab-menu {
+  position: fixed;
+  right: 18px;
+  bottom: 290px;
+  width: min(340px, 100%);
+  background: #151518;
+  border: 1px solid #2b2b33;
+  border-radius: 16px;
+  padding: 12px;
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 10;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45);
+}
+
+.fab-menu.open {
+  display: flex;
+}
+
+.kelas-form {
+  background: #1b1b1f;
+  border: 1px solid #2b2b33;
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kelas-form label {
+  font-size: 12px;
+  color: #b0b0b8;
+}
+
+.kelas-form input,
+.kelas-form select {
+  background: #101014;
+  border: 1px solid #2b2b33;
+  border-radius: 10px;
+  padding: 8px 10px;
+  color: #ffffff;
+  font-size: 13px;
+}
+
+.kelas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.kelas-card {
+  background: #1b1b1f;
+  border: 1px solid #2b2b33;
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kelas-toggle {
+  background: transparent;
+  border: none;
+  color: inherit;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.toggle-icon {
+  font-size: 12px;
+  color: #b0b0b8;
+  transition: transform 0.2s ease;
+}
+
+.kelas-toggle.open .toggle-icon {
+  transform: rotate(180deg);
+}
+
+.kelas-body {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kelas-body.open {
+  display: flex;
+}
+
+.reminder-toggle {
+  width: 100%;
+  background: #1b1b1f;
+  border: 1px solid #2b2b33;
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.reminder-toggle.open .toggle-icon {
+  transform: rotate(180deg);
+}
+
+.reminder-body {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.reminder-body.open {
+  display: flex;
+}
+
+@media (max-width: 480px) {
+  .fab-add {
+    bottom: 190px;
+    right: 14px;
+  }
+
+  .fab-menu {
+    right: 14px;
+    bottom: 240px;
+  }
+}
+
+.kelas-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.kelas-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.kelas-meta {
+  font-size: 12px;
+  color: #b0b0b8;
+  margin-top: 2px;
+}
+
+.kelas-code {
+  font-size: 12px;
+  color: #c7c7d1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.kelas-code strong {
+  color: #ffffff;
+}
+
+.kelas-tools {
+  display: grid;
+  gap: 12px;
+}
+
+.kelas-actions-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kelas-activate {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kelas-activate .btn-primary[disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.kelas-share {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kelas-share label {
+  font-size: 12px;
+  color: #b0b0b8;
+}
+
+.kelas-share select,
+.kelas-share input {
+  background: #101014;
+  border: 1px solid #2b2b33;
+  border-radius: 10px;
+  padding: 8px 10px;
+  color: #ffffff;
+  font-size: 13px;
+}
+
+.kelas-inline {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.kelas-members {
+  background: #151518;
+  border: 1px solid #2b2b33;
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.members-title {
+  font-size: 12px;
+  color: #b0b0b8;
+}
+
+.members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.member-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #e5e5ea;
+}
+
+.member-item small {
+  color: #a0a0ac;
+}
+
+.kelas-qr {
+  width: 180px;
+  height: 180px;
+  border-radius: 12px;
+  align-self: center;
+  margin-top: 8px;
+  background: #ffffff;
+}
+
 @media (min-width: 640px) {
   .container {
     max-width: 520px;
   }
+}
+.fab-menu .kelas-form {
+  background: transparent;
+  border: 1px solid #2b2b33;
 }

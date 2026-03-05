@@ -47,7 +47,7 @@
 
 .tab.active {
   color: #ffffff;
-  border-color: #6552fe;
+  border-color: var(--accent);
   background: rgba(101, 82, 254, 0.15);
 }
 
@@ -177,8 +177,45 @@
   font-size: 13px;
 }
 
+.account-card select {
+  background: #111118;
+  border: 1px solid #2b2b33;
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #ffffff;
+  font-size: 13px;
+}
+
+.theme-picker {
+  display: grid;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.theme-option {
+  display: grid;
+  grid-template-columns: 18px 18px 1fr;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+  color: #e5e5ea;
+}
+
+.theme-option input {
+  accent-color: var(--accent);
+}
+
+.theme-option .swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--swatch);
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.2) inset;
+}
+
 .btn-primary {
-  background: #6552fe;
+  background: var(--accent);
   border: none;
   color: #ffffff;
   padding: 10px 14px;
