@@ -1,4 +1,3 @@
-backend/config.php
-uploads/
-backend/debug_log.txt
-backend/debug_raw_response.json
+app/config/app.php
+app/config/config.php
+app/uploads/

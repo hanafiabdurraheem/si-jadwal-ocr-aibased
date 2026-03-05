@@ -1,0 +1,6 @@
+=== OCR START ===
+Gambar ditemukan
+Payload siap
+CURL sukses
+debug_raw_response.json dibuat
+OCR SUCCESS

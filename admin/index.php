@@ -1,15 +1,15 @@
 <?php
 session_start();
-require_once __DIR__ . '/../backend/db.php';
+require_once __DIR__ . '/../app/database/db.php';
 
 $adminUsername = 'hanafi';
 if (empty($_SESSION['username'])) {
-    header('Location: ../login/index.php');
+    header('Location: ../index.php?route=login');
     exit();
 }
 
 if ($_SESSION['username'] !== $adminUsername) {
-    header('Location: ../beranda/index.php');
+    header('Location: ../index.php?route=beranda');
     exit();
 }
 
@@ -219,7 +219,7 @@ function format_date($value) {
             </div>
             <div class="hero-meta">
                 <div class="chip">Login sebagai: <strong><?php echo h($_SESSION['username']); ?></strong></div>
-                <a class="chip" href="../backend/logout.php">Logout</a>
+                <a class="chip" href="../index.php?route=api-logout">Logout</a>
             </div>
         </header>
 
