@@ -78,11 +78,18 @@
   flex-direction: column;
   gap: 4px;
   flex: 1;
+  min-width: 0; /* allow child to shrink for ellipsis to work */
 }
 
 .schedule-name {
   font-weight: 600;
   font-size: 15px;
+  /* ensure long names don't break layout */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  max-width: 200px; /* adjust as needed or rely on flex container */
 }
 
 .schedule-meta {

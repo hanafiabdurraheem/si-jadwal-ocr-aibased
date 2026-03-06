@@ -351,14 +351,14 @@
     overflow-x: hidden;
   }}
 .login .terms {
-  position: absolute;
-  top: 178px;
-  left: 31px;
+  /* let checkbox participate in normal flow so it appears below inputs */
+  position: relative;
   display: flex;
   align-items: center;
   gap: 6px;
   color: #ffffff;
   font-size: 10px;
+  margin-top: 8px;
 }
 
 .login .terms input {

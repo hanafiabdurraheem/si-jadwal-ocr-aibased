@@ -2,5 +2,5 @@
 Gambar ditemukan
 Payload siap
 CURL sukses
-debug_raw_response.json dibuat
+Gagal menulis debug_raw_response.json
 OCR SUCCESS

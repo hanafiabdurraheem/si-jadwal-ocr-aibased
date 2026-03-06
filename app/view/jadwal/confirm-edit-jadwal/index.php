@@ -69,6 +69,7 @@ function h($value) {
 
     <script>
         const scheduleId = <?php echo json_encode($activeItem['id'] ?? ''); ?>;
+        const scheduleName = <?php echo json_encode($activeItem['name'] ?? 'Jadwal'); ?>;
         const scheduleHeader = <?php echo json_encode($header); ?>;
         const scheduleRows = <?php echo json_encode($rowsAssoc); ?>;
         const daysOrder = <?php echo json_encode($daysOrder); ?>;
@@ -410,16 +411,13 @@ function h($value) {
         });
 
         saveBtn.addEventListener('click', async () => {
-            if (!isDirty) {
-                setStatus('Tidak ada perubahan.');
-                return;
-            }
-
             saveBtn.disabled = true;
             setStatus('Menyimpan...');
 
             const payload = {
-                schedule_id: scheduleId,
+                scheduleId: scheduleId,
+                header: scheduleHeader,
+                name: scheduleName,
                 rows: scheduleRows.map(row => {
                     const rowCopy = {};
                     scheduleHeader.forEach(field => {
