@@ -147,7 +147,7 @@
 }
 
 .btn-primary {
-  background: #6552fe;
+  background: var(--theme-accent, #6552fe);
 }
 
 .btn-secondary {

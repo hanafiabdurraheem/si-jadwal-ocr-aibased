@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <title>Jadwal Kuliah</title>
     <link rel="stylesheet" href="app/view/jadwal/jadwalview/style.css">
+    <script>
+        (function applyThemeAccent() {
+            const key = 'si-jadwal-accent-color';
+            const saved = localStorage.getItem(key);
+            if (saved) {
+                document.documentElement.style.setProperty('--theme-accent', saved);
+            }
+        })();
+    </script>
 </head>
 <body>
 

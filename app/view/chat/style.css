@@ -93,7 +93,7 @@
   white-space: pre-line;
 }
 .msg.bot { background: #191924; border: 1px solid #252534; }
-.msg.user { background: #6552fe; color: #fff; align-self: flex-end; }
+.msg.user { background: var(--theme-accent, #6552fe); color: #fff; align-self: flex-end; }
 
 .chatbot-input {
   border-top: 1px solid #1f1f25;
@@ -118,7 +118,7 @@
 
 .chatbot-input button {
   border: none;
-  background: #6552fe;
+  background: var(--theme-accent, #6552fe);
   color: #fff;
   border-radius: 10px;
   font-weight: 600;

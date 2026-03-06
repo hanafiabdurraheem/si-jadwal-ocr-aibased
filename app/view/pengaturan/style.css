@@ -1,3 +1,7 @@
+:root {
+  --accent: var(--theme-accent, #6552fe);
+}
+
 .pengaturan {
   background-color: #0f0f10;
   display: flex;
@@ -47,8 +51,8 @@
 
 .tab.active {
   color: #ffffff;
-  border-color: #6552fe;
-  background: rgba(101, 82, 254, 0.15);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
 }
 
 .section {
@@ -178,7 +182,7 @@
 }
 
 .btn-primary {
-  background: #6552fe;
+  background: var(--accent);
   border: none;
   color: #ffffff;
   padding: 10px 14px;
@@ -216,6 +220,62 @@
   background: rgba(239, 68, 68, 0.15);
   color: #fca5a5;
   border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.pref-card {
+  background: #1b1b1f;
+  border: 1px solid #2b2b33;
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pref-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pref-option {
+  border: 1px solid #2b2b33;
+  background: #15151b;
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.pref-option input {
+  display: none;
+}
+
+.pref-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.pref-option.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.pref-help {
+  font-size: 12px;
+  color: #b0b0b8;
+}
+
+@supports not (color: color-mix(in srgb, #000 50%, #fff 50%)) {
+  .tab.active {
+    background: rgba(101, 82, 254, 0.15);
+  }
 }
 
 .empty-state {

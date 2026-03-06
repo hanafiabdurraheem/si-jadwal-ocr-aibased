@@ -63,7 +63,7 @@
             display: inline-block;
             margin-top: 20px;
             padding: 10px 16px;
-            background-color: #6552fe;
+            background-color: var(--theme-accent, #6552fe);
             color: white;
             text-decoration: none;
             border-radius: 6px;
@@ -271,7 +271,7 @@
   position: absolute;
   top: 760px;
   left: 227px;
-  background-color: #6552fe;
+  background-color: var(--theme-accent, #6552fe);
   border-radius: 16px;
 }
 

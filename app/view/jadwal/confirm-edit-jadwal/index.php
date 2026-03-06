@@ -10,6 +10,15 @@ function h($value) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Edit Jadwal Interaktif</title>
     <link rel="stylesheet" href="app/view/jadwal/confirm-edit-jadwal/style.css?v=<?= time() ?>">
+    <script>
+        (function applyThemeAccent() {
+            const key = 'si-jadwal-accent-color';
+            const saved = localStorage.getItem(key);
+            if (saved) {
+                document.documentElement.style.setProperty('--theme-accent', saved);
+            }
+        })();
+    </script>
 </head>
 <body>
     <div class="page">
@@ -58,7 +67,7 @@ function h($value) {
                 <button class="modal-close" type="button" id="closeModal">X</button>
             </div>
             <form id="editForm" class="modal-form">
-                <div id="formFields"></div>
+                <div id="formFields" class="form-grid"></div>
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" id="cancelEdit">Batal</button>
                     <button type="submit" class="btn-primary">Simpan</button>
@@ -197,6 +206,11 @@ function h($value) {
                 hideDeleteZone();
             });
 
+            card.addEventListener('dblclick', (e) => {
+                if (card.classList.contains('dragging')) return;
+                openEditModal(card.dataset.rowIndex);
+            });
+
             card.addEventListener('touchstart', (e) => {
                 if (e.touches.length !== 1) return;
                 touchStart = e.touches[0];
@@ -328,6 +342,18 @@ function h($value) {
             hideDeleteZone();
         });
 
+        function normalizeTimeValue(value) {
+            if (!value) return '';
+            let v = String(value).trim();
+            if (!v) return '';
+            v = v.replace('.', ':');
+            const match = v.match(/^(\d{1,2}):(\d{2})/);
+            if (!match) return '';
+            const hh = String(match[1]).padStart(2, '0');
+            const mm = match[2];
+            return `${hh}:${mm}`;
+        }
+
         function openEditModal(rowIndex) {
             const row = rowsByIndex.get(Number(rowIndex));
             if (!row) return;
@@ -336,31 +362,74 @@ function h($value) {
             formFields.innerHTML = '';
 
             scheduleHeader.forEach(field => {
+                if (field === 'No') {
+                    return;
+                }
                 const value = row[field] ?? '';
                 const fieldGroup = document.createElement('div');
-                fieldGroup.className = 'field-group';
+                fieldGroup.className = 'form-field';
 
                 const label = document.createElement('label');
                 label.textContent = field;
 
+                if (field === 'Hari') {
+                    const select = document.createElement('select');
+                    select.name = field;
+                    select.dataset.field = field;
+
+                    const emptyOption = document.createElement('option');
+                    emptyOption.value = '';
+                    emptyOption.textContent = 'Tanpa Hari';
+                    select.appendChild(emptyOption);
+
+                    daysOrder.forEach(day => {
+                        const opt = document.createElement('option');
+                        opt.value = day;
+                        opt.textContent = day;
+                        select.appendChild(opt);
+                    });
+
+                    select.value = value || '';
+                    fieldGroup.append(label, select);
+                    formFields.appendChild(fieldGroup);
+                    return;
+                }
+
+                if (field === 'Jam Mulai' || field === 'Jam Selesai') {
+                    const input = document.createElement('input');
+                    input.type = 'time';
+                    input.name = field;
+                    input.value = normalizeTimeValue(value);
+                    input.dataset.field = field;
+                    input.className = 'form-input';
+                    fieldGroup.append(label, input);
+                    formFields.appendChild(fieldGroup);
+                    return;
+                }
+
                 const input = document.createElement('input');
-                input.type = 'text';
+                input.type = field === 'SKS' ? 'number' : 'text';
+                if (field === 'SKS') {
+                    input.min = '0';
+                    input.step = '0.5';
+                }
                 input.name = field;
                 input.value = value;
                 input.dataset.field = field;
+                input.className = 'form-input';
 
                 fieldGroup.append(label, input);
                 formFields.appendChild(fieldGroup);
             });
 
-            document.getElementById('editModal').classList.add('show');
+            document.getElementById('editModal').classList.add('open');
             document.getElementById('editModal').setAttribute('aria-hidden', 'false');
             document.getElementById('editForm').dataset.rowIndex = rowIndex;
         }
 
         function closeEditModal() {
             const modal = document.getElementById('editModal');
-            modal.classList.remove('show');
+            modal.classList.remove('open');
             modal.setAttribute('aria-hidden', 'true');
         }
 

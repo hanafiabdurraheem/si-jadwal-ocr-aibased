@@ -22,10 +22,20 @@ $ts = time();
     <button class="chatbot-chip" data-prompt="Cek dan sesuaikan jadwal yang bentrok.">Cek jadwal</button>
   </div>
   <div class="chatbot-messages" id="chatbotMessages"></div>
-  <div class="chatbot-input">
-    <textarea id="chatbotInput" rows="2" placeholder="Tulis pesan..."></textarea>
-    <button type="button" id="chatbotSend">Kirim</button>
-  </div>
+<div class="chatbot-input">
+  <textarea id="chatbotInput" rows="2" placeholder="Tulis pesan..."></textarea>
+  <button type="button" id="chatbotSend">Kirim</button>
 </div>
+</div>
+
+<script>
+  (function applyThemeAccent() {
+    const key = 'si-jadwal-accent-color';
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      document.documentElement.style.setProperty('--theme-accent', saved);
+    }
+  })();
+</script>
 
 <script src="app/view/chat/script.js?v=<?= $ts ?>"></script>

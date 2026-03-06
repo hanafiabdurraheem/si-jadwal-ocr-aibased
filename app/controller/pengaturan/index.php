@@ -17,7 +17,7 @@ $messages = [];
 $errors = [];
 $successRedirect = false;
 $tab = $_GET['tab'] ?? 'jadwal';
-if (!in_array($tab, ['jadwal', 'akun'], true)) {
+if (!in_array($tab, ['jadwal', 'akun', 'tampilan'], true)) {
     $tab = 'jadwal';
 }
 

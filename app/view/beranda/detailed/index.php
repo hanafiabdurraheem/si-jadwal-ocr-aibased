@@ -6,12 +6,21 @@
   <link rel="stylesheet" href="app/view/beranda/detailed/global.css?v=<?= time() ?>" />
   <link rel="stylesheet" href="app/view/beranda/detailed/styleguide.css?v=<?= time() ?>" />
   <link rel="stylesheet" href="app/view/beranda/detailed/style.css?v=<?= time() ?>" />
+  <script>
+    (function applyThemeAccent() {
+      const key = 'si-jadwal-accent-color';
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        document.documentElement.style.setProperty('--theme-accent', saved);
+      }
+    })();
+  </script>
 </head>
 
 <style>
 .jadwal-container {
     background-image: url(app/view/assets/img/mesh-gradient-1.png);
-    background-color: #6552fe;
+    background-color: var(--theme-accent, #6552fe);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -28,6 +37,11 @@
     gap: 10px;
 
     box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+}
+
+.jadwal-container,
+.jadwal-container * {
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
 }
 
 .jadwal-value-only {

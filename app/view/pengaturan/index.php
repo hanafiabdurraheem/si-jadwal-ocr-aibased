@@ -25,6 +25,7 @@
         <div class="tabs">
           <a class="tab <?php echo $tab === 'jadwal' ? 'active' : ''; ?>" href="index.php?route=pengaturan&tab=jadwal">Jadwal</a>
           <a class="tab <?php echo $tab === 'akun' ? 'active' : ''; ?>" href="index.php?route=pengaturan&tab=akun">Akun</a>
+          <a class="tab <?php echo $tab === 'tampilan' ? 'active' : ''; ?>" href="index.php?route=pengaturan&tab=tampilan">Tampilan</a>
         </div>
 
         <?php if ($tab === 'jadwal'): ?>
@@ -116,6 +117,57 @@
         </section>
         <?php endif; ?>
 
+        <?php if ($tab === 'tampilan'): ?>
+        <section class="section">
+          <div class="section-title">Preferensi Warna</div>
+          <div class="pref-card">
+            <div class="pref-help">Pilih warna aksen utama aplikasi. Preferensi disimpan di browser.</div>
+            <div class="pref-grid" id="colorPrefGrid">
+              <label class="pref-option" data-color="#6552fe">
+                <input type="radio" name="accentColor" value="#6552fe">
+                <span class="pref-swatch" style="background:#6552fe"></span>
+                Indigo
+              </label>
+              <label class="pref-option" data-color="#8b5cf6">
+                <input type="radio" name="accentColor" value="#8b5cf6">
+                <span class="pref-swatch" style="background:#8b5cf6"></span>
+                Violet
+              </label>
+              <label class="pref-option" data-color="#0ea5e9">
+                <input type="radio" name="accentColor" value="#0ea5e9">
+                <span class="pref-swatch" style="background:#0ea5e9"></span>
+                Sky
+              </label>
+              <label class="pref-option" data-color="#10b981">
+                <input type="radio" name="accentColor" value="#10b981">
+                <span class="pref-swatch" style="background:#10b981"></span>
+                Emerald
+              </label>
+              <label class="pref-option" data-color="#f59e0b">
+                <input type="radio" name="accentColor" value="#f59e0b">
+                <span class="pref-swatch" style="background:#f59e0b"></span>
+                Amber
+              </label>
+              <label class="pref-option" data-color="#f43f5e">
+                <input type="radio" name="accentColor" value="#f43f5e">
+                <span class="pref-swatch" style="background:#f43f5e"></span>
+                Rose
+              </label>
+              <label class="pref-option" data-color="#22c55e">
+                <input type="radio" name="accentColor" value="#22c55e">
+                <span class="pref-swatch" style="background:#22c55e"></span>
+                Green
+              </label>
+              <label class="pref-option" data-color="#64748b">
+                <input type="radio" name="accentColor" value="#64748b">
+                <span class="pref-swatch" style="background:#64748b"></span>
+                Slate
+              </label>
+            </div>
+          </div>
+        </section>
+        <?php endif; ?>
+
         <a href="index.php?route=api-logout" class="logout">Logout</a>
       </div>
     </div>
@@ -123,6 +175,37 @@
     <?php include PROJECT_ROOT . '/app/view/nav.php'; ?>
 
     <script>
+      (function initColorPreference() {
+        const STORAGE_KEY = 'si-jadwal-accent-color';
+        const grid = document.getElementById('colorPrefGrid');
+        if (!grid) return;
+
+        function applyAccent(color) {
+          if (!color) return;
+          document.documentElement.style.setProperty('--theme-accent', color);
+        }
+
+        const saved = localStorage.getItem(STORAGE_KEY) || '#6552fe';
+        applyAccent(saved);
+
+        grid.querySelectorAll('.pref-option').forEach(option => {
+          const color = option.dataset.color || '';
+          const input = option.querySelector('input[type="radio"]');
+          const isActive = color.toLowerCase() === saved.toLowerCase();
+          if (input) input.checked = isActive;
+          option.classList.toggle('active', isActive);
+
+          option.addEventListener('click', () => {
+            const selected = option.dataset.color || '';
+            if (!selected) return;
+            localStorage.setItem(STORAGE_KEY, selected);
+            applyAccent(selected);
+            grid.querySelectorAll('.pref-option').forEach(item => item.classList.remove('active'));
+            option.classList.add('active');
+          });
+        });
+      })();
+
       document.querySelectorAll('.delete-schedule').forEach(button => {
         button.addEventListener('click', async () => {
           const scheduleId = button.dataset.id;

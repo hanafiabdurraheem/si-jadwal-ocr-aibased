@@ -154,7 +154,7 @@
   position: absolute;
   top: 590px;
   left: 227px;
-  background-color: #6552fe;
+  background-color: var(--theme-accent, #6552fe);
   border-radius: 16px;
 }
 

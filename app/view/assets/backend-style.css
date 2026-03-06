@@ -9,7 +9,7 @@
   }
 
 .th {
-    background-color: #6552fe;
+    background-color: var(--theme-accent, #6552fe);
     color: white;
   }
 

@@ -67,7 +67,7 @@
   height: 100px;
   top: 0;
   left: 0;
-  background-color: #6552fe;
+  background-color: var(--theme-accent, #6552fe);
   border-radius: 12px;
   backdrop-filter: blur(10px) brightness(100%);
   -webkit-backdrop-filter: blur(10px) brightness(100%);
@@ -144,7 +144,7 @@
 
 .jadwal-kuliah .rectangle-2 {
   width: 32px;
-  background-color: #6552fe;
+  background-color: var(--theme-accent, #6552fe);
   position: absolute;
   height: 25px;
   top: 0;
@@ -678,7 +678,7 @@
 
 .tabel-di-tengah-rata-kiri thead tr {
   background-image: url("../assets/img/mesh-gradient-1.png");
-  background-color: #6552fe;
+  background-color: var(--theme-accent, #6552fe);
   background-size: cover;
   background-position: center;
   background-blend-mode: overlay;

@@ -27,7 +27,7 @@ h1 {
     display: inline-block;
     padding: 8px 16px;
     margin: 0 5px;
-    background: #6552fe;
+    background: var(--theme-accent, #6552fe);
     color: #ffffff;
     text-decoration: none;
     border-radius: 6px;
