@@ -16,16 +16,6 @@
   </a>
 </div>
 
-<script>
-  (function applyThemeAccent() {
-    const key = 'si-jadwal-accent-color';
-    const saved = localStorage.getItem(key);
-    if (saved) {
-      document.documentElement.style.setProperty('--theme-accent', saved);
-    }
-  })();
-</script>
-
 <style>
             article.prose {
                 line-height: 1.75;

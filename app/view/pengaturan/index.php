@@ -3,6 +3,7 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta charset="utf-8" />
+    <?php include PROJECT_ROOT . '/app/view/theme.php'; ?>
     <link rel="stylesheet" href="app/view/pengaturan/global.css" />
     <link rel="stylesheet" href="app/view/pengaturan/styleguide.css" />
     <link rel="stylesheet" href="app/view/pengaturan/style.css?v=<?= time() ?>" />
@@ -121,7 +122,7 @@
         <section class="section">
           <div class="section-title">Preferensi Warna</div>
           <div class="pref-card">
-            <div class="pref-help">Pilih warna aksen utama aplikasi. Preferensi disimpan di browser.</div>
+            <div class="pref-help">Pilih warna aksen utama aplikasi. Preferensi disimpan di akun Anda.</div>
             <div class="pref-grid" id="colorPrefGrid">
               <label class="pref-option" data-color="#6552fe">
                 <input type="radio" name="accentColor" value="#6552fe">
@@ -176,7 +177,6 @@
 
     <script>
       (function initColorPreference() {
-        const STORAGE_KEY = 'si-jadwal-accent-color';
         const grid = document.getElementById('colorPrefGrid');
         if (!grid) return;
 
@@ -185,23 +185,44 @@
           document.documentElement.style.setProperty('--theme-accent', color);
         }
 
-        const saved = localStorage.getItem(STORAGE_KEY) || '#6552fe';
+        const saved = <?php echo json_encode($userPreferences['accent_color'] ?: '#6552fe'); ?>;
         applyAccent(saved);
 
         grid.querySelectorAll('.pref-option').forEach(option => {
           const color = option.dataset.color || '';
           const input = option.querySelector('input[type="radio"]');
-          const isActive = color.toLowerCase() === saved.toLowerCase();
+          const isActive = color.toLowerCase() === String(saved || '').toLowerCase();
           if (input) input.checked = isActive;
           option.classList.toggle('active', isActive);
 
-          option.addEventListener('click', () => {
+          option.addEventListener('click', async () => {
             const selected = option.dataset.color || '';
             if (!selected) return;
-            localStorage.setItem(STORAGE_KEY, selected);
-            applyAccent(selected);
-            grid.querySelectorAll('.pref-option').forEach(item => item.classList.remove('active'));
-            option.classList.add('active');
+
+            // Save to database
+            try {
+              const response = await fetch('index.php?route=pengaturan&tab=tampilan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                  action: 'update_preference',
+                  preference_value: selected
+                })
+              });
+              const data = await response.json();
+              if (!data.ok) {
+                throw new Error(data.error || 'Failed to save preference');
+              }
+              // Apply locally
+              applyAccent(selected);
+              grid.querySelectorAll('.pref-option').forEach(item => item.classList.remove('active'));
+              grid.querySelectorAll('.pref-option input[type="radio"]').forEach(inp => inp.checked = false);
+              option.classList.add('active');
+              const thisInput = option.querySelector('input[type="radio"]');
+              if (thisInput) thisInput.checked = true;
+            } catch (err) {
+              alert('Gagal menyimpan preferensi warna: ' + err.message);
+            }
           });
         });
       })();

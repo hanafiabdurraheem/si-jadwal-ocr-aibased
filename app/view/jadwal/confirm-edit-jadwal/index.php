@@ -9,16 +9,8 @@ function h($value) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Edit Jadwal Interaktif</title>
+    <?php include PROJECT_ROOT . '/app/view/theme.php'; ?>
     <link rel="stylesheet" href="app/view/jadwal/confirm-edit-jadwal/style.css?v=<?= time() ?>">
-    <script>
-        (function applyThemeAccent() {
-            const key = 'si-jadwal-accent-color';
-            const saved = localStorage.getItem(key);
-            if (saved) {
-                document.documentElement.style.setProperty('--theme-accent', saved);
-            }
-        })();
-    </script>
 </head>
 <body>
     <div class="page">

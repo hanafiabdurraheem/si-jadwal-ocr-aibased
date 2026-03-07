@@ -3,8 +3,9 @@
   
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta charset="utf-8" />
-    <link rel="stylesheet" href="app/view/beranda/global.css?v=<?= time() ?>" />
+  <meta charset="utf-8" />
+  <?php include PROJECT_ROOT . '/app/view/theme.php'; ?>
+  <link rel="stylesheet" href="app/view/beranda/global.css?v=<?= time() ?>" />
     <link rel="stylesheet" href="app/view/beranda/styleguide.css?v=<?= time() ?>" />
     <link rel="stylesheet" href="app/view/beranda/style.css?v=<?= time() ?>" />
     <link rel="stylesheet" href="app/view/beranda/detailed/global.css?v=<?= time() ?>" />

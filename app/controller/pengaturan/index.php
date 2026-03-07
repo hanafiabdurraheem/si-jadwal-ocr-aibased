@@ -136,6 +136,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+
+    if ($action === 'update_preference') {
+        $value = $_POST['preference_value'] ?? '';
+
+        if ($value === '') {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'Value preferensi wajib diisi.']);
+            exit();
+        } else {
+            $result = pengaturan_set_user_preference($username, 'accent_color', $value);
+            if ($result['success']) {
+                echo json_encode(['ok' => true]);
+                exit();
+            } else {
+                http_response_code(500);
+                echo json_encode(['ok' => false, 'error' => $result['error']]);
+                exit();
+            }
+        }
+    }
 }
 
 if ($successRedirect && empty($errors)) {
@@ -155,5 +175,8 @@ if (isset($_GET['notice']) && $_GET['notice'] === 'success') {
 
 $scheduleItems = pengaturan_load_schedule_items($username);
 $userDir = pengaturan_user_dir($username);
+$userPreferences = [
+    'accent_color' => pengaturan_get_user_preference($username, 'accent_color', '#6552fe')
+];
 
 require APP_ROOT . '/view/pengaturan/index.php';

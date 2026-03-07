@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta charset="utf-8" />
-    <link rel="stylesheet" href="app/view/kelas/global.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <?php include PROJECT_ROOT . '/app/view/theme.php'; ?>
+  <link rel="stylesheet" href="app/view/kelas/global.css" />
     <link rel="stylesheet" href="app/view/kelas/styleguide.css" />
     <link rel="stylesheet" href="app/view/kelas/style.css?v=<?= time() ?>" />
   </head>

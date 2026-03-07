@@ -44,3 +44,14 @@ CREATE TABLE IF NOT EXISTS `task` (
   KEY `idx_user_status` (`username`, `status`),
   KEY `idx_user_tanggal` (`username`, `tanggal`)
 ) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `user_preference` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `username` VARCHAR(191) NOT NULL,
+  `preference_key` VARCHAR(50) NOT NULL,
+  `preference_value` VARCHAR(255) NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `idx_user_key` (`username`, `preference_key`),
+  KEY `idx_username` (`username`)
+) ENGINE=InnoDB;
