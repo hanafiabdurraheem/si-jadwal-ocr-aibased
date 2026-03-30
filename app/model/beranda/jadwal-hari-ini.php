@@ -23,8 +23,7 @@ function beranda_render_jadwal_hari_ini(string $username): string
 
     $active = resolve_active_schedule_item($username);
     if (!$active) {
-        echo "⚠️ Jadwal aktif tidak ditemukan.";
-        return ob_get_clean();
+        return '';
     }
 
     $rows = get_schedule_rows($username, $active['id']);

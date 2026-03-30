@@ -36,6 +36,10 @@ $routes = [
     'api-task-quick-add' => APP_ROOT . '/controller/api/task_quick_add.php',
     'api-update-schedule-day' => APP_ROOT . '/controller/api/update_schedule_day.php',
     'api-bacacsv-tugas' => APP_ROOT . '/controller/api/bacacsv-tugas.php',
+    'api-google-connect' => APP_ROOT . '/controller/api/google_connect.php',
+    'api-google-callback' => APP_ROOT . '/controller/api/google_callback.php',
+    'api-google-sync' => APP_ROOT . '/controller/api/google_sync.php',
+    'api-google-disconnect' => APP_ROOT . '/controller/api/google_disconnect.php',
 ];
 
 if (!isset($routes[$route])) {

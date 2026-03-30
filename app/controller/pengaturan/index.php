@@ -12,6 +12,7 @@ if (empty($_SESSION['username'])) {
 
 require_once PROJECT_ROOT . '/app/database/db.php';
 require_once APP_ROOT . '/model/pengaturan/index.php';
+require_once PROJECT_ROOT . '/google-calendar-sync/functions.php';
 
 $messages = [];
 $errors = [];
@@ -173,10 +174,27 @@ if (isset($_GET['notice']) && $_GET['notice'] === 'success') {
     $messages[] = 'Perubahan berhasil disimpan.';
 }
 
+$googleFlash = pullFlash();
+if ($googleFlash) {
+    $flashType = $googleFlash['type'] ?? 'info';
+    $flashMessage = $googleFlash['message'] ?? '';
+    if (in_array($flashType, ['error'], true)) {
+        $errors[] = $flashMessage;
+    } else {
+        $messages[] = $flashMessage;
+    }
+}
+
 $scheduleItems = pengaturan_load_schedule_items($username);
 $userDir = pengaturan_user_dir($username);
 $userPreferences = [
     'accent_color' => pengaturan_get_user_preference($username, 'accent_color', '#6552fe')
 ];
+$googleCsrfToken = ensureCsrfToken();
+$googleUserId = currentUserId();
+$googleCalendarConnected = false;
+if ($googleUserId) {
+    $googleCalendarConnected = (bool)getTokenRow($googleUserId);
+}
 
 require APP_ROOT . '/view/pengaturan/index.php';

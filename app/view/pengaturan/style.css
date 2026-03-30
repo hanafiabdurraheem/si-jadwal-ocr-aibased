@@ -192,6 +192,38 @@
   margin-top: 6px;
 }
 
+.btn-primary[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-danger-inline {
+  background: #ef4444;
+  border: none;
+  color: #ffffff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 6px;
+  width: 100%;
+}
+
+.btn-danger-inline[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.google-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.google-actions form {
+  margin: 0;
+}
+
 .logout {
   display: inline-block;
   margin-top: 24px;

@@ -93,6 +93,30 @@
             </div>
             <?php endif; ?>
 
+            <div class="account-card">
+              <div class="card-title">Google Calendar</div>
+              <p style="font-size: 12px; color: #b0b0b8;">
+                Status koneksi:
+                <strong style="color: <?php echo $googleCalendarConnected ? '#6ee7b7' : '#fca5a5'; ?>">
+                  <?php echo $googleCalendarConnected ? 'Terhubung' : 'Belum terhubung'; ?>
+                </strong>
+              </p>
+              <div class="google-actions">
+                <form method="POST" action="index.php?route=api-google-connect">
+                  <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($googleCsrfToken); ?>">
+                  <button type="submit" class="btn-primary">Connect Google Calendar</button>
+                </form>
+                <form method="POST" action="index.php?route=api-google-sync">
+                  <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($googleCsrfToken); ?>">
+                  <button type="submit" class="btn-primary" <?php echo $googleCalendarConnected ? '' : 'disabled'; ?>>Sync Now</button>
+                </form>
+                <form method="POST" action="index.php?route=api-google-disconnect" onsubmit="return confirm('Putuskan koneksi Google Calendar?');">
+                  <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($googleCsrfToken); ?>">
+                  <button type="submit" class="btn-danger-inline" <?php echo $googleCalendarConnected ? '' : 'disabled'; ?>>Disconnect</button>
+                </form>
+              </div>
+            </div>
+
             <form class="account-card" method="POST">
               <input type="hidden" name="action" value="update_username">
               <div class="card-title">Ganti Username</div>

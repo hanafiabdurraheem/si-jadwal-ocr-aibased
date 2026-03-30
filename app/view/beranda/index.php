@@ -38,12 +38,7 @@
               <div class="text-wrapper-3">
   <?php
     require_once PROJECT_ROOT . '/app/model/beranda/upcoming.php';
-    $output = beranda_render_upcoming($username);
-
-    // Misalnya ambil hanya satu baris data pertama dari tabel (tanpa tag HTML)
-    // Contoh: hapus semua tag HTML dan ambil isi
-    $plainText = strip_tags($output);
-    echo htmlspecialchars($plainText); // atau echo langsung jika aman
+    echo beranda_render_upcoming($username);
   ?>
 </div>
 
