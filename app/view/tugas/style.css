@@ -212,6 +212,35 @@
   background-color: white;
 }
 
+.daftar-tugas .text-wrapper-8 {
+  display: none;
+}
+
+.daftar-tugas .text-wrapper-9 {
+  display: none;
+}
+
+.quiz-extra {
+  display: none;
+}
+
+.quiz-extra.hidden {
+  display: none;
+}
+
+.daftar-tugas .quiz-time {
+  display: none;
+}
+
+.daftar-tugas .quiz-link {
+  display: none;
+}
+
+.daftar-tugas .div.quiz-active .tambah,
+.daftar-tugas .div.quiz-active .batal {
+  top: 590px;
+}
+
 @media (max-width: 430px) {
   .daftar-tugas .line,
   .daftar-tugas .overlap,

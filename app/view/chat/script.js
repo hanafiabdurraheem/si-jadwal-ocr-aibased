@@ -9,8 +9,8 @@
 
   if (!modal || !toggle || !closeBtn || !messagesEl || !inputEl || !sendBtn) return;
 
-  const apiUrl = '/si-jadwal/index.php?route=api-chatbot';
-  const addTaskUrl = '/si-jadwal/index.php?route=api-task-quick-add';
+  const apiUrl = toggle.dataset.apiUrl || 'index.php?route=api-chatbot';
+  const addTaskUrl = toggle.dataset.addTaskUrl || 'index.php?route=api-task-quick-add';
   const context = document.body.dataset.chatContext || 'general';
   const storageKey = `si_jadwal_chat_${context}`;
   const maxMessages = 12;

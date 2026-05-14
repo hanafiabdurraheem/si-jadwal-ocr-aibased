@@ -21,7 +21,7 @@
   position: absolute;
   width: 283px;
   height: 41px;
-  top: 136px;
+  top: 112px;
   left: 24px;
   font-family: "Poppins-Bold", Helvetica;
   font-weight: 700;
@@ -36,7 +36,7 @@
 .jadwal-kuliah .waktu {
   position: absolute;
   width: 238px;
-  top: 173px;
+  top: 148px;
   left: 24px;
   font-family: "Poppins-Regular", Helvetica;
   font-weight: 400;
@@ -53,7 +53,7 @@
   position: absolute;
   width: 381px;
   height: 100px;
-  top: 213px;
+  top: 188px;
   left: 24px;
   background-image: url(../assets/img/mesh-gradient-1.png);
   background-size: cover;
@@ -104,7 +104,7 @@
   position: absolute;
   width: 48px;
   height: 48px;
-  top: 74px;
+  top: 50px;
   left: 26px;
   object-fit: cover;
   background-image: url(../assets/img/user.jpg);
@@ -657,7 +657,7 @@
 /* Wrapper tabel jika diperlukan */
 .tabel-di-tengah-rata-kiri {
   position: absolute;
-  top: 360px;
+  top: 336px;
   left: 25px;
   width: 383px;
   max-height: 90vh;
@@ -665,6 +665,81 @@
   background-color: #1d1d1d;
   border-radius: 12px;
   box-sizing: border-box;
+}
+
+.daily-schedule-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.day-nav-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: #f0f0f7;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+}
+
+.day-nav-icon {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.day-nav-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.34);
+  color: #ffffff;
+}
+
+.day-nav-btn:active {
+  transform: translateY(0);
+}
+
+.day-nav-btn:focus-visible {
+  outline: none;
+  border-color: var(--theme-accent, #6552fe);
+  box-shadow: 0 0 0 2px rgba(101, 82, 254, 0.28);
+}
+
+.day-selected-btn {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: transparent;
+  color: #ffffff;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 12px;
+  text-align: center;
+  cursor: pointer;
+  text-transform: capitalize;
+  letter-spacing: 0.2px;
+  box-shadow: none;
+}
+
+.daily-table-shell {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #2f2f3b;
+}
+
+.daily-empty {
+  margin: 8px 0 0;
+  padding-left: 0 !important;
 }
 
 /* Tabel umum */
@@ -714,7 +789,7 @@ h2 {
 
 .toast-notice {
   position: absolute;
-  top: 90px;
+  top: 68px;
   right: 24px;
   background: #1b1b1f;
   color: #ffffff;

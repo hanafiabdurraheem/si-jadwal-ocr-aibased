@@ -1,7 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -10,14 +7,20 @@ require_once __DIR__ . '/../../config/app.php';
 require_once APP_ROOT . '/model/login/index.php';
 
 $flashMessage = null;
+$flashType = 'success';
 if (!empty($_SESSION['message'])) {
     $flashMessage = $_SESSION['message'];
     unset($_SESSION['message']);
 }
+if (!empty($_SESSION['message_type'])) {
+    $flashType = (string)$_SESSION['message_type'];
+    unset($_SESSION['message_type']);
+}
 
 $error = null;
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+$requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+if ($requestMethod === 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 

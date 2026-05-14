@@ -6,35 +6,8 @@ if (session_status() === PHP_SESSION_NONE) {
 $accent = '#6552fe';
 
 if (!empty($_SESSION['username'])) {
-    require_once PROJECT_ROOT . '/app/database/db.php';
-    $conn = db_connect();
-    if ($conn) {
-        $stmt = $conn->prepare("SELECT theme_color FROM user_preference WHERE username = ?");
-        if ($stmt) {
-            $stmt->bind_param("s", $_SESSION['username']);
-            if ($stmt->execute()) {
-                $stmt->bind_result($value);
-                if ($stmt->fetch()) {
-                    $value = (string)$value;
-                    $legacyMap = [
-                        'ungu' => '#6552fe',
-                        'kuning' => '#f59e0b',
-                        'biru' => '#0ea5e9',
-                        'hijau' => '#10b981',
-                        'magenta' => '#f43f5e'
-                    ];
-                    $lower = strtolower(trim($value));
-                    if ($lower !== '' && $lower[0] !== '#' && isset($legacyMap[$lower])) {
-                        $accent = $legacyMap[$lower];
-                    } elseif ($value !== '') {
-                        $accent = $value;
-                    }
-                }
-            }
-            $stmt->close();
-        }
-        $conn->close();
-    }
+    require_once PROJECT_ROOT . '/app/model/pengaturan/index.php';
+    $accent = pengaturan_get_user_preference((string)$_SESSION['username'], 'accent_color', $accent);
 }
 ?>
 <script>

@@ -26,7 +26,7 @@ function beranda_render_upcoming(string $username): string
     if (!$active) {
         echo '
     <form id="uploadForm" action="index.php?route=api-upload" method="POST" enctype="multipart/form-data">
-        <input type="file" name="fileToUpload[]" id="fileToUpload" multiple accept=".jpg,.jpeg,.png" required style="display:none;" />
+        <input type="file" name="fileToUpload[]" id="fileToUpload" multiple accept=".jpg,.jpeg,.png,.pdf" required style="display:none;" />
         
         <a href="#" class="tambah-button" style="color:white;" 
            onclick="document.getElementById(\'fileToUpload\').click(); return false;">
@@ -68,12 +68,12 @@ function beranda_render_upcoming(string $username): string
                     headers: { "X-Requested-With": "XMLHttpRequest" },
                     body: formData
                 });
-                const data = await response.json();
-                if (!data.ok) throw new Error(data.message || "Gagal upload");
+                const data = await response.json().catch(() => ({ ok: false, message: "Gagal memproses upload." }));
+                if (!response.ok || !data.ok) throw new Error(data.message || "Gagal upload");
                 window.location.href = data.redirect;
             } catch (err) {
                 overlay.style.display = "none";
-                alert("Gagal memproses upload. Silakan coba lagi.");
+                alert(err.message || "Gagal memproses upload. Silakan coba lagi.");
             }
         });
     </script>
@@ -103,13 +103,10 @@ function beranda_render_upcoming(string $username): string
         }
     }
 
-    echo "<h2></h2>";
     if (!$jadwalTerdekat) {
         echo "<p style='color:white;'>Tidak ada dalam waktu dekat</p>";
     } else {
-        echo "<div class='jadwal-container'>";
-        echo "<div class='jadwal-value-only'>" . htmlspecialchars($jadwalTerdekat['nama_matakuliah'] ?? '-') . "</div>";
-        echo "</div>";
+        echo htmlspecialchars($jadwalTerdekat['nama_matakuliah'] ?? '-');
     }
 
     return ob_get_clean();

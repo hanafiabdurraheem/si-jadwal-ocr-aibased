@@ -1,19 +1,23 @@
 <?php
 session_start();
-set_time_limit(0);
+if (function_exists('set_time_limit')) {
+    @set_time_limit(0);
+}
 require_once __DIR__ . '/../../config/app.php';
 require_once PROJECT_ROOT . '/app/model/schedule_store.php';
 require_once PROJECT_ROOT . '/app/database/db.php';
+require_once PROJECT_ROOT . '/app/model/ocr_guard.php';
 
 $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_GET['ajax']) && $_GET['ajax'] === '1'));
 
-function upload_error($message, $isAjax) {
+function upload_error($message, $isAjax, $statusCode = 400) {
     if ($isAjax) {
         header('Content-Type: application/json');
-        http_response_code(400);
+        http_response_code((int)$statusCode);
         echo json_encode(["ok" => false, "message" => $message]);
         exit();
     }
+    http_response_code((int)$statusCode);
     die($message);
 }
 
@@ -23,8 +27,11 @@ if (!isset($_SESSION['username'])) {
 
 $username = $_SESSION['username'];
 
-$allowedExt = ['jpg', 'jpeg', 'png'];
+$allowedExt = ['jpg', 'jpeg', 'png', 'pdf'];
 $maxSize = 10 * 1024 * 1024; // 10MB
+const OCR_USER_LIMIT = 10;
+const OCR_THROTTLE_MAX_REQUESTS = 3;
+const OCR_THROTTLE_WINDOW_SECONDS = 20;
 
 function parse_size_to_bytes($value) {
     $value = trim((string)$value);
@@ -85,27 +92,107 @@ function normalize_uploaded_files($files) {
     return $normalized;
 }
 
+function count_potential_ocr_files($files, $allowedExt, $maxSize) {
+    $count = 0;
+    foreach ($files as $file) {
+        $fileName = $file['name'] ?? '';
+        $fileError = $file['error'] ?? UPLOAD_ERR_NO_FILE;
+        $fileSize = (int)($file['size'] ?? 0);
+        if ($fileError !== UPLOAD_ERR_OK) {
+            continue;
+        }
+        $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        if (!in_array($extension, $allowedExt, true)) {
+            continue;
+        }
+        if ($fileSize > $maxSize) {
+            continue;
+        }
+        $count++;
+    }
+    return $count;
+}
+
 $files = normalize_uploaded_files($_FILES["fileToUpload"]);
 
 if (count($files) === 0) {
     upload_error("File tidak ditemukan.", $isAjax);
 }
 
+$conn = db_connect();
+
+$throttleStatus = ocr_register_request(
+    $conn,
+    $username,
+    OCR_THROTTLE_MAX_REQUESTS,
+    OCR_THROTTLE_WINDOW_SECONDS
+);
+if (!$throttleStatus['ok']) {
+    $conn->close();
+    upload_error("Gagal memproses throttle OCR. Coba lagi.", $isAjax, 500);
+}
+if (empty($throttleStatus['allowed'])) {
+    $retryAfter = (int)($throttleStatus['retry_after'] ?? OCR_THROTTLE_WINDOW_SECONDS);
+    header('Retry-After: ' . $retryAfter);
+    $conn->close();
+    upload_error("Terlalu banyak request OCR. Coba lagi dalam {$retryAfter} detik.", $isAjax, 429);
+}
+
+$quotaStatus = ocr_get_quota_status($conn, $username, OCR_USER_LIMIT);
+if (!$quotaStatus['ok']) {
+    $conn->close();
+    upload_error("Gagal membaca kuota OCR. Coba lagi.", $isAjax, 500);
+}
+if (($quotaStatus['remaining'] ?? 0) <= 0) {
+    $conn->close();
+    upload_error("Batas OCR Anda sudah habis (maksimal 10x).", $isAjax, 403);
+}
+
+$potentialFiles = count_potential_ocr_files($files, $allowedExt, $maxSize);
+if ($potentialFiles > (int)$quotaStatus['remaining']) {
+    $remaining = (int)$quotaStatus['remaining'];
+    $conn->close();
+    upload_error("Sisa kuota OCR Anda {$remaining}x. Pilih maksimal {$remaining} file untuk diproses.", $isAjax, 403);
+}
+
 // ==========================
 // Buat struktur folder baru
 // ==========================
 
-$basePath = realpath(PROJECT_ROOT . '/app/uploads');
+$uploadsRoot = PROJECT_ROOT . '/app/uploads';
+if (!is_dir($uploadsRoot) && !@mkdir($uploadsRoot, 0775, true)) {
+    $conn->close();
+    upload_error("Folder uploads tidak dapat dibuat di server hosting.", $isAjax, 500);
+}
+
+$basePath = realpath($uploadsRoot);
+if ($basePath === false) {
+    $basePath = $uploadsRoot;
+}
+
+if (!is_dir($basePath) || !is_writable($basePath)) {
+    $conn->close();
+    upload_error("Folder uploads tidak writable. Periksa permission hosting.", $isAjax, 500);
+}
+
 $userPath = $basePath . '/' . $username;
 
-if (!file_exists($userPath)) {
-    mkdir($userPath, 0777, true);
+if (!is_dir($userPath) && !@mkdir($userPath, 0775, true)) {
+    $conn->close();
+    upload_error("Folder upload user tidak dapat dibuat.", $isAjax, 500);
+}
+
+if (!is_writable($userPath)) {
+    $conn->close();
+    upload_error("Folder upload user tidak writable.", $isAjax, 500);
 }
 
 require_once PROJECT_ROOT . '/app/model/ocr_process.php';
 
 $lastScheduleId = null;
 $processedCount = 0;
+$quotaExceeded = false;
+$lastProcessingError = '';
 $totalSelected = isset($_POST['total_files']) ? (int)$_POST['total_files'] : count($files);
 $logFile = PROJECT_ROOT . '/app/database/debug_upload_log.txt';
 
@@ -119,7 +206,10 @@ if ($batchMode) {
     $uniqueId = uniqid(date("Ymd_His") . '_', true);
     $batchId = str_replace('.', '_', $uniqueId);
     $batchUploadPath = $userPath . '/' . $batchId;
-    mkdir($batchUploadPath, 0777, true);
+    if (!@mkdir($batchUploadPath, 0775, true)) {
+        $conn->close();
+        upload_error("Folder batch upload tidak dapat dibuat.", $isAjax, 500);
+    }
 }
 
 file_put_contents(
@@ -156,7 +246,10 @@ foreach ($files as $index => $file) {
         $uniqueId = uniqid(date("Ymd_His") . '_', true);
         $safeId = str_replace('.', '_', $uniqueId);
         $uploadPath = $userPath . '/' . $safeId;
-        mkdir($uploadPath, 0777, true);
+        if (!@mkdir($uploadPath, 0775, true)) {
+            $conn->close();
+            upload_error("Folder upload tidak dapat dibuat.", $isAjax, 500);
+        }
     }
 
     $originalFileName = $batchMode ? ('original_' . ($index + 1) . '.' . $extension) : ('original.' . $extension);
@@ -167,12 +260,24 @@ foreach ($files as $index => $file) {
         continue;
     }
 
-    $resultData = processOCR($originalFile);
-    if (empty($resultData)) {
-        usleep(600000);
-        $resultData = processOCR($originalFile);
+    $consume = ocr_consume_quota($conn, $username, OCR_USER_LIMIT);
+    if (!$consume['ok']) {
+        $conn->close();
+        upload_error("Gagal memproses kuota OCR. Coba lagi.", $isAjax, 500);
     }
+    if (empty($consume['allowed'])) {
+        file_put_contents($logFile, "SKIP {$fileName} quota_exceeded\n", FILE_APPEND);
+        $quotaExceeded = true;
+        break;
+    }
+
+    $ocrError = '';
+    $resultData = processOCR($originalFile, $ocrError);
     if (empty($resultData)) {
+        if ($ocrError !== '') {
+            $lastProcessingError = $ocrError;
+            file_put_contents($logFile, "SKIP {$fileName} ocr_failed reason={$ocrError}\n", FILE_APPEND);
+        }
         file_put_contents($logFile, "SKIP {$fileName} ocr_failed\n", FILE_APPEND);
         continue;
     }
@@ -225,16 +330,30 @@ if ($batchMode && $processedCount > 0) {
 }
 
 if (!$lastScheduleId) {
+    if ($quotaExceeded) {
+        $conn->close();
+        upload_error("Batas OCR Anda sudah habis (maksimal 10x).", $isAjax, 403);
+    }
+    if ($lastProcessingError !== '') {
+        $conn->close();
+        upload_error($lastProcessingError, $isAjax, 422);
+    }
+    $conn->close();
     upload_error("Tidak ada file yang berhasil diproses.", $isAjax);
 }
 
 $_SESSION['active_schedule_id'] = $lastScheduleId;
+
+$latestQuota = ocr_get_quota_status($conn, $username, OCR_USER_LIMIT);
+$remainingQuota = $latestQuota['ok'] ? (int)$latestQuota['remaining'] : null;
+$conn->close();
 
 if ($isAjax) {
     header('Content-Type: application/json');
     echo json_encode([
         "ok" => true,
         "processed" => $processedCount,
+        "ocr_remaining" => $remainingQuota,
         "redirect" => "index.php?route=jadwal-confirm-edit&schedule_id=" . urlencode($lastScheduleId)
     ]);
     exit();

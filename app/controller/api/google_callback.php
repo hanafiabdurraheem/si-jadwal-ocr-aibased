@@ -1,11 +1,10 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+require_once __DIR__ . '/google_bootstrap.php';
+
+if (!google_require_dependency()) {
+    google_flash_message('Integrasi Google Calendar belum tersedia di server hosting ini.', 'error');
+    google_redirect('index.php?route=pengaturan&tab=akun');
 }
-
-require_once __DIR__ . '/../../config/app.php';
-
-require_once PROJECT_ROOT . '/google-calendar-sync/functions.php';
 
 if (empty($_SESSION['username']) && !empty($_SESSION['oauth2_pending_username'])) {
     $_SESSION['username'] = (string)$_SESSION['oauth2_pending_username'];
@@ -21,8 +20,8 @@ if (!$userId || !getUserById($userId)) {
 }
 
 if (!$userId || !getUserById($userId)) {
-    flash('Akun login tidak valid untuk koneksi Google.', 'error');
-    appRedirect('index.php?route=login');
+    google_flash_message('Akun login tidak valid untuk koneksi Google.', 'error');
+    google_redirect('index.php?route=login');
 }
 
 $state = $_GET['state'] ?? '';
@@ -30,21 +29,21 @@ $storedState = $_SESSION['oauth2_state'] ?? '';
 unset($_SESSION['oauth2_state']);
 
 if ((!$state || !$storedState || !hash_equals($storedState, (string)$state)) && isset($_GET['code'])) {
-    flash('State OAuth tidak cocok, tetapi token tetap diproses.', 'warning');
+    google_flash_message('State OAuth tidak cocok, tetapi token tetap diproses.', 'warning');
 } else if (!$state || !$storedState || !hash_equals($storedState, (string)$state)) {
-    flash('State OAuth tidak valid. Coba hubungkan ulang.', 'error');
-    appRedirect('index.php?route=pengaturan&tab=akun');
+    google_flash_message('State OAuth tidak valid. Coba hubungkan ulang.', 'error');
+    google_redirect('index.php?route=pengaturan&tab=akun');
 }
 
 if (isset($_GET['error'])) {
-    flash('Otorisasi Google gagal: ' . (string)$_GET['error'], 'error');
-    appRedirect('index.php?route=pengaturan&tab=akun');
+    google_flash_message('Otorisasi Google gagal: ' . (string)$_GET['error'], 'error');
+    google_redirect('index.php?route=pengaturan&tab=akun');
 }
 
 $code = $_GET['code'] ?? '';
 if ($code === '') {
-    flash('Authorization code tidak ditemukan.', 'error');
-    appRedirect('index.php?route=pengaturan&tab=akun');
+    google_flash_message('Authorization code tidak ditemukan.', 'error');
+    google_redirect('index.php?route=pengaturan&tab=akun');
 }
 
 try {
@@ -57,10 +56,10 @@ try {
     }
 
     upsertUserToken($userId, $token);
-    flash('Google Calendar berhasil terhubung.', 'success');
+    google_flash_message('Google Calendar berhasil terhubung.', 'success');
 } catch (Throwable $e) {
-    flash('Callback OAuth gagal: ' . $e->getMessage(), 'error');
+    google_flash_message('Callback OAuth gagal: ' . $e->getMessage(), 'error');
 }
 
 unset($_SESSION['oauth2_pending_user_id'], $_SESSION['oauth2_pending_username']);
-appRedirect('index.php?route=pengaturan&tab=akun');
+google_redirect('index.php?route=pengaturan&tab=akun');

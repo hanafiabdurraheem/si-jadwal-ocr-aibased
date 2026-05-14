@@ -19,6 +19,9 @@
   margin: 0 0 6px;
   font-size: 24px;
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .header p {
@@ -42,6 +45,45 @@
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chevron-icon {
+  width: 18px;
+  height: 18px;
+  color: #c7c7d1;
+  margin-left: auto;
+  transition: transform 0.2s ease;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.section-toggle.collapsed .chevron-icon {
+  transform: rotate(-90deg);
+}
+
+.section-count {
+  font-size: 11px;
+  color: #9ca3af;
+  background: #1f2937;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.section-body.collapsed {
+  display: none;
 }
 
 .task-list {
@@ -122,6 +164,11 @@
 
 .detail-row span {
   color: #a0a0ac;
+}
+
+.detail-row strong a {
+  color: #93c5fd;
+  text-decoration: none;
 }
 
 .task-actions {

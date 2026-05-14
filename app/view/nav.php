@@ -151,3 +151,75 @@
 
 
         </style>
+
+<?php $navUsername = $_SESSION['username'] ?? ''; ?>
+<script>
+  (function runBrowserReminders() {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+    const username = <?php echo json_encode($navUsername); ?>;
+    if (!username) return;
+
+    const prefKey = 'si_jadwal_reminder_settings_' + username;
+    const scheduleStampKey = 'si_jadwal_last_schedule_notice_' + username;
+    const taskStampKey = 'si_jadwal_last_task_notice_' + username;
+
+    function readPref() {
+      try {
+        const raw = localStorage.getItem(prefKey);
+        if (!raw) return { enabled: false, schedule: true, task: true };
+        const parsed = JSON.parse(raw);
+        return {
+          enabled: !!parsed.enabled,
+          schedule: parsed.schedule !== false,
+          task: parsed.task !== false
+        };
+      } catch (e) {
+        return { enabled: false, schedule: true, task: true };
+      }
+    }
+
+    async function checkReminder() {
+      const pref = readPref();
+      if (!pref.enabled) return;
+
+      try {
+        const response = await fetch('index.php?route=api-reminder-summary', {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const json = await response.json();
+        if (!json || !json.ok || !json.data) return;
+
+        const data = json.data;
+        if (pref.schedule && data.upcoming_schedule) {
+          const stamp = (data.upcoming_schedule.mata_kuliah || '') + '|' + (data.upcoming_schedule.jam_mulai || '') + '|' + new Date().toISOString().slice(0, 10);
+          if (localStorage.getItem(scheduleStampKey) !== stamp) {
+            new Notification('Pengingat Jadwal', {
+              body: (data.upcoming_schedule.mata_kuliah || 'Mata kuliah') + ' mulai jam ' + (data.upcoming_schedule.jam_mulai || '-')
+            });
+            localStorage.setItem(scheduleStampKey, stamp);
+          }
+        }
+
+        if (pref.task && Array.isArray(data.pending_tasks) && data.pending_tasks.length > 0) {
+          const nearest = data.pending_tasks[0];
+          const overdueCount = data.pending_tasks.filter(item => item.is_overdue).length;
+          const dueStamp = String(nearest.id || '') + '|' + String(nearest.tanggal || '') + '|' + String(nearest.jam || '') + '|' + String(overdueCount);
+          if (localStorage.getItem(taskStampKey) !== dueStamp) {
+            let body = 'Masih ada tugas belum selesai.';
+            if (overdueCount > 0) {
+              body = 'Ada ' + overdueCount + ' tugas melewati deadline.';
+            } else if (nearest.mata_kuliah || nearest.jenis) {
+              body = 'Prioritas: ' + (nearest.mata_kuliah || 'Tugas') + ' - ' + (nearest.jenis || '');
+            }
+            new Notification('Pengingat Tugas', { body });
+            localStorage.setItem(taskStampKey, dueStamp);
+          }
+        }
+      } catch (e) {}
+    }
+
+    checkReminder();
+    setInterval(checkReminder, 120000);
+  })();
+</script>

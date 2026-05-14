@@ -1,37 +1,32 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-require_once __DIR__ . '/../../config/app.php';
+require_once __DIR__ . '/google_bootstrap.php';
 
 if (empty($_SESSION['username'])) {
-    header('Location: index.php?route=login');
-    exit();
+    google_redirect('index.php?route=login');
 }
 
-require_once PROJECT_ROOT . '/google-calendar-sync/functions.php';
+if (!google_require_dependency()) {
+    google_flash_message('Integrasi Google Calendar belum tersedia di server hosting ini.', 'error');
+    google_redirect('index.php?route=pengaturan&tab=akun');
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: index.php?route=pengaturan&tab=akun');
-    exit;
+    google_redirect('index.php?route=pengaturan&tab=akun');
 }
 
-verifyCsrfOrFail($_POST['csrf_token'] ?? null);
+google_verify_csrf_or_fail($_POST['csrf_token'] ?? null);
 
 $userId = currentUserId();
 if (!$userId || !getUserById($userId)) {
-    flash('Akun login tidak valid.', 'error');
-    header('Location: index.php?route=pengaturan&tab=akun');
-    exit;
+    google_flash_message('Akun login tidak valid.', 'error');
+    google_redirect('index.php?route=pengaturan&tab=akun');
 }
 
 try {
     $client = getAuthorizedClientForUser($userId);
 } catch (Throwable $e) {
-    flash('Sinkronisasi diblokir: ' . $e->getMessage(), 'error');
-    header('Location: index.php?route=pengaturan&tab=akun');
-    exit;
+    google_flash_message('Sinkronisasi diblokir: ' . $e->getMessage(), 'error');
+    google_redirect('index.php?route=pengaturan&tab=akun');
 }
 
 $schedules = fetchSchedulesByUser($userId);
@@ -134,7 +129,7 @@ try {
     $stats['errors']++;
 }
 
-flash(
+google_flash_message(
     sprintf(
         'Sinkronisasi selesai. Buat: %d, Update: %d, Hapus: %d, Tidak berubah: %d, Error: %d',
         $stats['created'],
@@ -146,5 +141,4 @@ flash(
     $stats['errors'] > 0 ? 'warning' : 'success'
 );
 
-header('Location: index.php?route=pengaturan&tab=akun');
-exit;
+google_redirect('index.php?route=pengaturan&tab=akun');

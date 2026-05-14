@@ -24,9 +24,10 @@
         <?php endif; ?>
 
         <div class="tabs">
-          <a class="tab <?php echo $tab === 'jadwal' ? 'active' : ''; ?>" href="index.php?route=pengaturan&tab=jadwal">Jadwal</a>
-          <a class="tab <?php echo $tab === 'akun' ? 'active' : ''; ?>" href="index.php?route=pengaturan&tab=akun">Akun</a>
           <a class="tab <?php echo $tab === 'tampilan' ? 'active' : ''; ?>" href="index.php?route=pengaturan&tab=tampilan">Tampilan</a>
+          <a class="tab <?php echo $tab === 'jadwal' ? 'active' : ''; ?>" href="index.php?route=pengaturan&tab=jadwal">Jadwal</a>
+          <a class="tab <?php echo $tab === 'pengingat' ? 'active' : ''; ?>" href="index.php?route=pengaturan&tab=pengingat">Pengingat</a>
+          <a class="tab <?php echo $tab === 'akun' ? 'active' : ''; ?>" href="index.php?route=pengaturan&tab=akun">Akun</a>
         </div>
 
         <?php if ($tab === 'jadwal'): ?>
@@ -96,24 +97,10 @@
             <div class="account-card">
               <div class="card-title">Google Calendar</div>
               <p style="font-size: 12px; color: #b0b0b8;">
-                Status koneksi:
-                <strong style="color: <?php echo $googleCalendarConnected ? '#6ee7b7' : '#fca5a5'; ?>">
-                  <?php echo $googleCalendarConnected ? 'Terhubung' : 'Belum terhubung'; ?>
-                </strong>
+                Export jadwal ke file <strong>.ics</strong> lalu import manual ke Google Calendar.
               </p>
               <div class="google-actions">
-                <form method="POST" action="index.php?route=api-google-connect">
-                  <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($googleCsrfToken); ?>">
-                  <button type="submit" class="btn-primary">Connect Google Calendar</button>
-                </form>
-                <form method="POST" action="index.php?route=api-google-sync">
-                  <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($googleCsrfToken); ?>">
-                  <button type="submit" class="btn-primary" <?php echo $googleCalendarConnected ? '' : 'disabled'; ?>>Sync Now</button>
-                </form>
-                <form method="POST" action="index.php?route=api-google-disconnect" onsubmit="return confirm('Putuskan koneksi Google Calendar?');">
-                  <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($googleCsrfToken); ?>">
-                  <button type="submit" class="btn-danger-inline" <?php echo $googleCalendarConnected ? '' : 'disabled'; ?>>Disconnect</button>
-                </form>
+                <a class="btn-primary" href="index.php?route=api-export-calendar-ics">Download File ICS</a>
               </div>
             </div>
 
@@ -193,7 +180,34 @@
         </section>
         <?php endif; ?>
 
-        <a href="index.php?route=api-logout" class="logout">Logout</a>
+        <?php if ($tab === 'pengingat'): ?>
+        <section class="section">
+          <div class="section-title">Pengingat Browser</div>
+          <div class="pref-card">
+            <div class="pref-help">
+              Aktifkan notifikasi browser untuk jadwal terdekat dan tugas yang belum selesai.
+            </div>
+            <div class="reminder-status" id="browserReminderStatus">Status: Memeriksa izin browser...</div>
+            <label class="reminder-toggle">
+              <input id="enableBrowserReminder" type="checkbox">
+              Aktifkan pengingat browser
+            </label>
+            <label class="reminder-toggle">
+              <input id="enableScheduleReminder" type="checkbox">
+              Pengingat jadwal yang akan datang
+            </label>
+            <label class="reminder-toggle">
+              <input id="enableTaskReminder" type="checkbox">
+              Pengingat tugas belum dikerjakan
+            </label>
+            <button type="button" class="btn-primary" id="saveReminderPrefs">Simpan Pengingat</button>
+          </div>
+        </section>
+        <?php endif; ?>
+
+        <?php if ($tab === 'akun'): ?>
+          <a href="index.php?route=api-logout" class="logout">Logout</a>
+        <?php endif; ?>
       </div>
     </div>
 
@@ -276,6 +290,72 @@
           }
         });
       });
+
+      (function initReminderPreference() {
+        const enableMain = document.getElementById('enableBrowserReminder');
+        const enableSchedule = document.getElementById('enableScheduleReminder');
+        const enableTask = document.getElementById('enableTaskReminder');
+        const saveButton = document.getElementById('saveReminderPrefs');
+        const statusEl = document.getElementById('browserReminderStatus');
+        if (!enableMain || !enableSchedule || !enableTask || !saveButton || !statusEl) return;
+
+        const storageKey = 'si_jadwal_reminder_settings_' + <?php echo json_encode($username); ?>;
+
+        function getPermissionLabel() {
+          if (!('Notification' in window)) return 'Browser tidak mendukung notifikasi.';
+          if (Notification.permission === 'granted') return 'Izin notifikasi: diizinkan.';
+          if (Notification.permission === 'denied') return 'Izin notifikasi: ditolak.';
+          return 'Izin notifikasi: belum diminta.';
+        }
+
+        function readState() {
+          try {
+            const raw = localStorage.getItem(storageKey);
+            if (!raw) return { enabled: false, schedule: true, task: true };
+            const parsed = JSON.parse(raw);
+            return {
+              enabled: !!parsed.enabled,
+              schedule: parsed.schedule !== false,
+              task: parsed.task !== false
+            };
+          } catch (e) {
+            return { enabled: false, schedule: true, task: true };
+          }
+        }
+
+        function writeState(nextState) {
+          localStorage.setItem(storageKey, JSON.stringify(nextState));
+          localStorage.setItem('si_jadwal_reminder_dirty', String(Date.now()));
+        }
+
+        const state = readState();
+        enableMain.checked = state.enabled;
+        enableSchedule.checked = state.schedule;
+        enableTask.checked = state.task;
+        statusEl.textContent = 'Status: ' + getPermissionLabel();
+
+        saveButton.addEventListener('click', async () => {
+          if (!('Notification' in window)) {
+            alert('Browser ini belum mendukung notifikasi.');
+            return;
+          }
+
+          if (enableMain.checked && Notification.permission !== 'granted') {
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+              alert('Notifikasi belum diizinkan.');
+            }
+          }
+
+          writeState({
+            enabled: enableMain.checked,
+            schedule: enableSchedule.checked,
+            task: enableTask.checked
+          });
+          statusEl.textContent = 'Status: ' + getPermissionLabel();
+          alert('Pengaturan pengingat tersimpan.');
+        });
+      })();
     </script>
   </body>
 </html>

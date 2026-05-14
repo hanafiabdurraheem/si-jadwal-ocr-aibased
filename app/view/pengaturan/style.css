@@ -35,10 +35,11 @@
   margin-top: 16px;
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .tab {
-  flex: 1;
+  flex: 1 1 calc(50% - 10px);
   text-align: center;
   padding: 10px 12px;
   border-radius: 12px;
@@ -224,6 +225,12 @@
   margin: 0;
 }
 
+.google-actions .btn-primary {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+}
+
 .logout {
   display: inline-block;
   margin-top: 24px;
@@ -302,6 +309,24 @@
 .pref-help {
   font-size: 12px;
   color: #b0b0b8;
+}
+
+.reminder-status {
+  font-size: 12px;
+  color: #c7c7d1;
+}
+
+.reminder-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.reminder-toggle input {
+  width: 16px;
+  height: 16px;
 }
 
 @supports not (color: color-mix(in srgb, #000 50%, #fff 50%)) {

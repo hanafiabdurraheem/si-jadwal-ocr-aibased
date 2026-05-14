@@ -16,9 +16,9 @@ function load_schedule_index($username) {
     $stmt = $conn->prepare("SELECT set_id, name, MAX(created_at) as created_at, MAX(updated_at) as updated_at, MAX(is_active) as is_active FROM schedule WHERE username=? GROUP BY set_id, name ORDER BY is_active DESC, created_at DESC");
     $stmt->bind_param('s', $username);
     $stmt->execute();
-    $res = $stmt->get_result();
     $items = [];
-    while ($row = $res->fetch_assoc()) {
+    $rows = db_stmt_fetch_all_assoc($stmt);
+    foreach ($rows as $row) {
         $items[] = schedule_map_row($row);
     }
     $stmt->close();
@@ -133,11 +133,7 @@ function get_schedule_rows($username, $setId) {
     $stmt = $conn->prepare("SELECT id, set_id, name, is_active, no_col, kode, nama_matakuliah, sks, kelas, pengampu, jenis, ruang, hari, jam_mulai, jam_selesai FROM schedule WHERE username=? AND set_id=? ORDER BY id ASC");
     $stmt->bind_param('ss', $username, $setId);
     $stmt->execute();
-    $res = $stmt->get_result();
-    $rows = [];
-    while ($r = $res->fetch_assoc()) {
-        $rows[] = $r;
-    }
+    $rows = db_stmt_fetch_all_assoc($stmt);
     $stmt->close();
     $conn->close();
     return $rows;

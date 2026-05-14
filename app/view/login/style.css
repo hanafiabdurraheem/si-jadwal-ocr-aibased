@@ -98,7 +98,7 @@
 }
 
 .login .password {
-  width: 290px;
+  width: 246px;
   height: 31px;
   top: 142px;
   font-family: "Poppins-Regular", Helvetica;
@@ -109,6 +109,35 @@
   left: 31px;
   letter-spacing: 0;
   line-height: normal;
+}
+
+.login .password-toggle {
+  position: absolute;
+  top: 141px;
+  right: 20px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  color: #3a3a3a;
+  cursor: pointer;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+
+.login .password-toggle svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.login .password-toggle.is-visible {
+  color: #1f2e8a;
 }
 
 .login .text-wrapper-29 {
@@ -155,6 +184,46 @@
 
 }
 
+.login .terms {
+  position: absolute;
+  top: 186px;
+  left: 31px;
+  width: 280px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Poppins-Regular", Helvetica;
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 12px;
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+
+.login .terms input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  flex: 0 0 auto;
+  accent-color: #262a5a;
+}
+
+.login .signup-card {
+  height: 296px;
+}
+
+.login .signup-card .kotak-utama {
+  height: 296px;
+}
+
+.login .signup-card .button-login {
+  top: 248px;
+}
+
+.login .signup-card .text-wrapper-3 {
+  top: 247px;
+}
+
 @media (max-width: 430px) {
   .login .overlap-group {
     width: calc(100% - 76px);
@@ -179,6 +248,10 @@
   .login .password {
     width: calc(100% - 62px);
     left: 31px;
+  }
+
+  .login .terms {
+    width: calc(100% - 62px);
   }
 
   .login .button-login,
@@ -350,3 +423,113 @@
     height: 100%;
     overflow-x: hidden;
   }}
+
+.login-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 10, 20, 0.55);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.login-popup-backdrop.is-hidden {
+  display: none;
+}
+
+.login-popup {
+  width: min(420px, 100%);
+  border-radius: 16px;
+  border: 1px solid transparent;
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  align-items: flex-start;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+
+.login-popup-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 20px;
+  line-height: 1;
+  opacity: 0.75;
+  cursor: pointer;
+}
+
+.login-popup-close:hover {
+  opacity: 1;
+}
+
+.login-alert-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex: 0 0 24px;
+}
+
+.login-alert-content {
+  min-width: 0;
+  padding-right: 20px;
+}
+
+.login-alert-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.login-alert p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.login-alert-success {
+  background: linear-gradient(145deg, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.08));
+  border-color: rgba(16, 185, 129, 0.55);
+  color: #d1fae5;
+}
+
+.login-alert-success .login-alert-icon {
+  background: rgba(16, 185, 129, 0.24);
+  color: #ecfdf5;
+}
+
+.login-alert-warning {
+  background: linear-gradient(145deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.08));
+  border-color: rgba(245, 158, 11, 0.6);
+  color: #fef3c7;
+}
+
+.login-alert-warning .login-alert-icon {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fffbeb;
+}
+
+.login-alert-error {
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.22), rgba(239, 68, 68, 0.1));
+  border-color: rgba(239, 68, 68, 0.65);
+  color: #fee2e2;
+}
+
+.login-alert-error .login-alert-icon {
+  background: rgba(239, 68, 68, 0.28);
+  color: #fff1f2;
+}

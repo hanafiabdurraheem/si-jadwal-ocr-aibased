@@ -25,6 +25,7 @@ function signup_handle_submit(): array
 
     if ($check->num_rows > 0) {
         $_SESSION['message'] = "⚠️ Username sudah terdaftar. Silakan login.";
+        $_SESSION['message_type'] = 'warning';
         header("Location: index.php?route=login");
         exit;
     }
@@ -38,12 +39,14 @@ function signup_handle_submit(): array
         if (!is_dir($userFolder)) {
             mkdir($userFolder, 0777, true);
         }
-        $_SESSION['message'] = "✅ Registrasi berhasil. Silakan login.";
+        $_SESSION['message'] = "🎉 Registrasi berhasil! Akun \"$username\" sudah siap digunakan. Sekarang silakan login dengan username dan password yang baru Anda buat.";
+        $_SESSION['message_type'] = 'success';
         header("Location: index.php?route=login");
         exit;
     }
 
     $_SESSION['message'] = "❌ Gagal menyimpan data.";
+    $_SESSION['message_type'] = 'error';
     header("Location: index.php?route=signup");
     exit;
 }

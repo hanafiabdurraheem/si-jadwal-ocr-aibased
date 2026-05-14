@@ -1,10 +1,14 @@
 <?php
 // Widget chatbot. Pastikan halaman yang menyertakan file ini sudah memulai session & mengecek login.
 $ts = time();
+// Ganti file ini kapan saja untuk mengganti ikon chatbot tanpa ubah kode.
+$chatbotIconPath = 'app/view/assets/img/chatbot-icon.png';
+$chatbotApiPath = 'index.php?route=api-chatbot';
+$chatbotTaskApiPath = 'index.php?route=api-task-quick-add';
 ?>
 <link rel="stylesheet" href="app/view/chat/style.css?v=<?= $ts ?>">
-<div class="chatbot-floating" id="chatbotToggle" aria-label="Buka chatbot">
-  <span class="chatbot-icon" aria-hidden="true"></span>
+<div class="chatbot-floating" id="chatbotToggle" data-api-url="<?= htmlspecialchars($chatbotApiPath) ?>" data-add-task-url="<?= htmlspecialchars($chatbotTaskApiPath) ?>" aria-label="Buka chatbot">
+  <img class="chatbot-icon" src="<?= htmlspecialchars($chatbotIconPath) ?>?v=<?= $ts ?>" alt="Chatbot icon" aria-hidden="true">
 </div>
 
 <div class="chatbot-modal" id="chatbotModal" aria-hidden="true">

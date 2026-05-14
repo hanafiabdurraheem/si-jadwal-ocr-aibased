@@ -111,7 +111,9 @@ if ($active) {
     }
 }
 
-$lower = mb_strtolower($userMessage);
+$lower = function_exists('mb_strtolower')
+    ? mb_strtolower($userMessage, 'UTF-8')
+    : strtolower($userMessage);
 if (preg_match('/to-?do hari ini|todo hari ini/', $lower)) {
     $reply = "To-do hari ini:\n";
     if (!empty($todayList)) {
@@ -177,10 +179,28 @@ $payload = [
     "max_tokens" => 400,
 ];
 
+if (!function_exists('curl_init')) {
+    echo json_encode([
+        'ok' => true,
+        'reply' => "Fitur AI belum aktif di server hosting (ekstensi cURL tidak tersedia)."
+    ]);
+    exit;
+}
+
+if (!defined('OPENAI_API_KEY') || trim((string)OPENAI_API_KEY) === '') {
+    echo json_encode([
+        'ok' => true,
+        'reply' => "Fitur AI belum dikonfigurasi di server hosting."
+    ]);
+    exit;
+}
+
 $ch = curl_init('https://api.openai.com/v1/chat/completions');
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST => true,
+    CURLOPT_CONNECTTIMEOUT => 10,
+    CURLOPT_TIMEOUT => 45,
     CURLOPT_HTTPHEADER => [
         'Content-Type: application/json',
         'Authorization: Bearer ' . OPENAI_API_KEY

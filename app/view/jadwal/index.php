@@ -18,7 +18,7 @@
       <!-- Upload Form -->
       <form id="uploadForm" action="index.php?route=api-upload" method="POST" enctype="multipart/form-data">
         <input type="file" name="fileToUpload[]" id="fileToUpload"
-        accept=".jpg,.jpeg,.png" multiple required style="display:none;" />
+        accept=".jpg,.jpeg,.png,.pdf" multiple required style="display:none;" />
       </form>
 
       <div class="text-wrapper-4">Daftar Jadwal</div>
@@ -109,14 +109,14 @@
                 headers: { "X-Requested-With": "XMLHttpRequest" },
                 body: formData
             });
-            const data = await response.json();
-            if (!data.ok) {
+            const data = await response.json().catch(() => ({ ok: false, message: "Gagal memproses upload." }));
+            if (!response.ok || !data.ok) {
                 throw new Error(data.message || "Gagal upload");
             }
             window.location.href = data.redirect;
         } catch (err) {
             hideUploadOverlay();
-            alert("Gagal memproses upload. Silakan coba lagi.");
+            alert(err.message || "Gagal memproses upload. Silakan coba lagi.");
         }
     });
 

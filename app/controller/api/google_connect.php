@@ -1,26 +1,25 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-require_once __DIR__ . '/../../config/app.php';
+require_once __DIR__ . '/google_bootstrap.php';
 
 if (empty($_SESSION['username'])) {
-    appRedirect('index.php?route=login');
+    google_redirect('index.php?route=login');
 }
 
-require_once PROJECT_ROOT . '/google-calendar-sync/functions.php';
+if (!google_require_dependency()) {
+    google_flash_message('Integrasi Google Calendar belum tersedia di server hosting ini.', 'error');
+    google_redirect('index.php?route=pengaturan&tab=akun');
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    appRedirect('index.php?route=pengaturan&tab=akun');
+    google_redirect('index.php?route=pengaturan&tab=akun');
 }
 
-verifyCsrfOrFail($_POST['csrf_token'] ?? null);
+google_verify_csrf_or_fail($_POST['csrf_token'] ?? null);
 
 $userId = currentUserId();
 if (!$userId || !getUserById($userId)) {
-    flash('Akun login tidak valid untuk koneksi Google.', 'error');
-    appRedirect('index.php?route=pengaturan&tab=akun');
+    google_flash_message('Akun login tidak valid untuk koneksi Google.', 'error');
+    google_redirect('index.php?route=pengaturan&tab=akun');
 }
 
 try {
@@ -33,8 +32,8 @@ try {
     $client->setState($state);
 
     $authUrl = $client->createAuthUrl();
-    appRedirect((string)filter_var($authUrl, FILTER_SANITIZE_URL));
+    google_redirect((string)filter_var($authUrl, FILTER_SANITIZE_URL));
 } catch (Throwable $e) {
-    flash('Gagal memulai OAuth Google: ' . $e->getMessage(), 'error');
-    appRedirect('index.php?route=pengaturan&tab=akun');
+    google_flash_message('Gagal memulai OAuth Google: ' . $e->getMessage(), 'error');
+    google_redirect('index.php?route=pengaturan&tab=akun');
 }

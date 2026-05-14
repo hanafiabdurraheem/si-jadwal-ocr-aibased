@@ -30,7 +30,7 @@
       <?php endif; ?>
       
         
-          <div class="overlap" style="cursor: pointer;" onclick="openModal()">
+          <div id="upcomingCard" class="overlap" style="cursor: pointer;" onclick="openModal()">
 
 
               <div class="kotak-upcoming"></div>
@@ -66,22 +66,22 @@
         position:absolute; 
         top:0; 
         left:0; 
-        width:60px;         
+        width:100%;         
         height:100%;        
-        background:transparentns; 
+        background:transparent; 
         z-index:999;">
       </div>
 
       <div id="popupModal" 
         style="display:none; 
         position:absolute; 
-        top:339px; 
-        left:50%; 
-        transform:translate(-50%, -50%); 
+        top:188px; 
+        left:24px; 
+        transform:none; 
         background:transparent; 
         padding:0px; 
-        width:90%;
-        max-width:383px; 
+        width:381px;
+        max-width:calc(100% - 48px); 
         height:auto;
         max-height:none;
         border-radius: 12px;
@@ -97,6 +97,8 @@
     <script>
   document.addEventListener("DOMContentLoaded", function () {
     const toast = document.getElementById('toastNotice');
+    const upcomingCard = document.getElementById('upcomingCard');
+    const popupModal = document.getElementById('popupModal');
     if (toast) {
       setTimeout(() => {
         toast.classList.add('show');
@@ -113,7 +115,13 @@
 
     window.openModal = function () {
       document.getElementById('popupOverlay').style.display = 'block';
-      document.getElementById('popupModal').style.display = 'block';
+      popupModal.style.display = 'block';
+
+      if (upcomingCard && popupModal) {
+        popupModal.style.top = upcomingCard.offsetTop + 'px';
+        popupModal.style.left = upcomingCard.offsetLeft + 'px';
+        popupModal.style.width = upcomingCard.offsetWidth + 'px';
+      }
 
       fetch('index.php?route=beranda-detailed')
         .then(response => response.text())
@@ -128,8 +136,13 @@
 
     window.closeModal = function () {
       document.getElementById('popupOverlay').style.display = 'none';
-      document.getElementById('popupModal').style.display = 'none';
+      popupModal.style.display = 'none';
     };
+
+    const overlay = document.getElementById('popupOverlay');
+    if (overlay) {
+      overlay.addEventListener('click', window.closeModal);
+    }
   });
 </script>
 

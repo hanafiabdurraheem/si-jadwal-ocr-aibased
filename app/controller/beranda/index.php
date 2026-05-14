@@ -4,8 +4,7 @@ session_start();
 require_once __DIR__ . '/../../config/app.php';
 
 if (empty($_SESSION['username'])) {
-    header("Location: index.php?route=login");
-    exit();
+    $_SESSION['username'] = 'hanafi'; // temp auto login
 }
 
 require_once APP_ROOT . '/model/beranda/index.php';

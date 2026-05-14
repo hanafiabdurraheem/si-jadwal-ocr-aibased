@@ -29,7 +29,7 @@
     <div class="div">
 
       <form method="POST" action="">
-        <div class="overlap-group">
+        <div class="overlap-group signup-card">
           <div class="kotak-utama"></div>
           <div class="kotak-usernam"></div>
           <div class="kotak-pass"></div>
@@ -39,7 +39,13 @@
           <input type="text" name="username" class="user" placeholder="Username" required>
 
           <div class="text-wrapper-29">Password Baru</div>
-          <input type="password" name="password" class="password" placeholder="Password" required>
+          <input type="password" name="password" id="signup-password" class="password" placeholder="Password" required>
+          <button type="button" class="password-toggle" data-target="signup-password" aria-label="Tampilkan password" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M1.5 12s3.8-6 10.5-6 10.5 6 10.5 6-3.8 6-10.5 6S1.5 12 1.5 12z"></path>
+              <circle cx="12" cy="12" r="3.2"></circle>
+            </svg>
+          </button>
 
           <label class="terms">
             <input type="checkbox" name="agree_terms" required>
@@ -65,6 +71,24 @@
     </div>
 
   </div>
+  <script>
+    (function initPasswordToggle() {
+      const toggles = document.querySelectorAll('.password-toggle');
+      toggles.forEach((toggle) => {
+        const targetId = toggle.getAttribute('data-target');
+        const input = targetId ? document.getElementById(targetId) : null;
+        if (!input) return;
+
+        toggle.addEventListener('click', () => {
+          const visible = input.type === 'text';
+          input.type = visible ? 'password' : 'text';
+          toggle.classList.toggle('is-visible', !visible);
+          toggle.setAttribute('aria-pressed', String(!visible));
+          toggle.setAttribute('aria-label', visible ? 'Tampilkan password' : 'Sembunyikan password');
+        });
+      });
+    })();
+  </script>
 </body>
 
 </html>
